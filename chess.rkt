@@ -1,27 +1,7 @@
-;; PIECE
-; A piece is a struct with 2 members
-;   - type  -> a String which indicates the type
-;   - moves -> a List of valid moves for the piece
-(define-struct piece [type moves])
+(requite htdp/universe)
+(require "board.rkt")
 
-;; CELL
-; A cell is a struct with a value and a color
-;   - value -> one of EMPTY, PIECE
-;   - color -> color of the cell (?)
-(define-struct cell [value color])
-
-;; BOARD
-; A board is a vector of cells and a canvas
-;    - cells  -> vector of 64 cells which are on the board
-;    - canvas -> image result from the vector of cells
-(define-struct board [cells canvas])
-
-;; INITIAL DATA
-; WHITE
-(define WHITE 0)
-; BLACK
-(define BLACK 1)
-
+;; INITIAL VALUES
 ; PAWN piece
 (define PAWN-MOVES (list "TODO: see how to make moves"))
 (define PAWN (make-piece "pawn" PAWN-MOVES))
