@@ -9,10 +9,9 @@
 (define-struct piece [type moves])
 
 ;; CELL
-; A cell is a struct with a value and a color
+; A cell is a struct with a value
 ;   - value -> one of EMPTY, PIECE
-;   - color -> color of the cell (?)
-(define-struct cell [value index])
+(define-struct cell [value])
 
 ;; BOARD
 ; A board is a vector of cells and a canvas

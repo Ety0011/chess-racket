@@ -24,16 +24,26 @@
 (define EMPTY-MOVES '())
 (define EMPTY (make-piece "empty" EMPTY-MOVES))
 
-(define CELL1 (make-cell EMPTY WHITE))
-(define CELL2 (make-cell EMPTY BLACK))
-(define CELL3 (make-cell EMPTY WHITE))
-(define CELL4 (make-cell EMPTY BLACK))
-(define CELL5 (make-cell EMPTY WHITE))
-(define CELL6 (make-cell EMPTY BLACK))
-(define CELL7 (make-cell EMPTY WHITE))
-(define CELL8 (make-cell EMPTY BLACK))
+(define CELL1  (make-cell EMPTY))
+(define CELL2  (make-cell EMPTY))
+(define CELL3  (make-cell EMPTY))
+(define CELL4  (make-cell EMPTY))
+(define CELL5  (make-cell EMPTY))
+(define CELL6  (make-cell EMPTY))
+(define CELL7  (make-cell EMPTY))
+(define CELL8  (make-cell EMPTY))
+(define CELL9  (make-cell EMPTY))
+(define CELL10 (make-cell EMPTY))
+(define CELL11 (make-cell EMPTY))
+(define CELL12 (make-cell EMPTY))
+(define CELL13 (make-cell EMPTY))
+(define CELL14 (make-cell EMPTY))
+(define CELL15 (make-cell EMPTY))
+(define CELL16 (make-cell EMPTY))
 ; ...
 
-(define BOARD (vector CELL1 CELL2 CELL3 CELL4
-                      CELL5 CELL6 CELL7 CELL8)) ;...
+(define BOARD (vector CELL1  CELL2  CELL3  CELL4
+                      CELL5  CELL6  CELL7  CELL8
+                      CELL9  CELL10 CELL11 CELL12
+                      CELL13 CELL14 CELL15 CELL16))
 
