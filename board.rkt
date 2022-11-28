@@ -1,14 +1,26 @@
 (require racket/base)
 
+(define WHITE 0)
+(define BLACK 1)
+
+(define PAWN-MOVES (list "TODO: see how to make moves"))
+(define ROOK-MOVES (list "TODO: see how to make moves"))
+(define BISHOP-MOVES (list "TODO: see how to make moves"))
+(define KNIGHT-MOVES (list "TODO: see how to make moves"))
+(define KING-MOVES (list "TODO: see how to make moves"))
+(define QUEEN-MOVES (list "TODO: see how to make moves"))
+(define EMPTY-MOVES '())
+
 ;; DATA TYPES
 
 ;; PIECE
 ; A piece is a struct with 2 members
 ;   - type  -> a String which indicates the type
 ;   - moves -> a List of valid moves for the piece
-(define-struct piece [type moves])
+;   - color -> Number - 0 WHITE - 1 BLACK
+(define-struct piece [type moves color])
 
-;; CELL
+; CELL
 ; A cell is a struct with a value
 ;   - value -> one of EMPTY, PIECE
 (define-struct cell [value])
