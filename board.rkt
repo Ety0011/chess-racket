@@ -1,4 +1,4 @@
-require 2htdp/image)
+(require 2htdp/image)
 (require htdp/universe)
 
 (define BLACK #f)
@@ -36,13 +36,24 @@ A Type is one of those Strings:
 (define BLACK_PAWN      (make-piece     "pawn"      BLACK))
 
 (define EMPTY "empty")
+(define CELL_SIDE 100)
 
 ; Cell is one of:
 ;   - Piece
 ;   - EMPTY
 
+(define EMPTY_CHESSBOARD
+  (above (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)))
+
 A Matrix is a Vector of Vectors of Cells
-(define CHESSBOARD_MATRIX
+(define CHESSBOARD
   (vector
    (vector BLACK_ROOK       BLACK_KNIGHT     BLACK_BISHOP       BLACK_QUEEN         BLACK_KING      BLACK_BISHOP        BLACK_KNIGHT        BLACK_ROOK)
    (vector BLACK_PAWN       BLACK_PAWN       BLACK_PAWN         BLACK_PAWN          BLACK_PAWN      BLACK_PAWN          BLACK_PAWN          BLACK_PAWN)
@@ -53,7 +64,94 @@ A Matrix is a Vector of Vectors of Cells
    (vector WHITE_PAWN       WHITE_PAWN       WHITE_PAWN         WHITE_PAWN          WHITE_PAWN      WHITE_PAWN          WHITE_PAWN          WHITE_PAWN)
    (vector WHITE_ROOK       WHITE_KNIGHT     WHITE_BISHOP       WHITE_QUEEN         WHITE_KING      WHITE_BISHOP        WHITE_KNIGHT        WHITE_ROOK)))
 
-(define CHESSBOARD)
+
+(require 2htdp/image)
+
+(define WHITE_KING      (text "WHITE_KING" 10 "white"))
+(define WHITE_QUEEN     (text "WHITE_QUEEN" 10 "white"))
+(define WHITE_ROOK      (text "WHITE_ROOK" 10 "white"))
+(define WHITE_BISHOP    (text "WHITE_BISHOP" 10 "white"))
+(define WHITE_KNIGHT    (text "WHITE_KNIGHT" 10 "white"))
+(define WHITE_PAWN      (text "WHITE_PAWN" 10 "white"))
+
+; Definition of the black pieces
+(define BLACK_KING      (text "BLACK_KING" 10 "white"))
+(define BLACK_QUEEN     (text "BLACK_QUEEN" 10 "white"))
+(define BLACK_ROOK      (text "BLACK_ROOK" 10 "white"))
+(define BLACK_BISHOP    (text "BLACK_BISHOP" 10 "white"))
+(define BLACK_KNIGHT    (text "BLACK_KNIGHT" 10 "white"))
+(define BLACK_PAWN      (text "BLACK_PAWN" 10 "white"))
+
+(define EMPTY           (text "EMPTY" 10 "white"))
+(define SQUARE1 (square 100 "solid" "grey"))
+(define SQUARE2 (square 100 "solid" "black"))
+
+(define CHESSBOARD
+  (above (beside BLACK_ROOK       BLACK_KNIGHT     BLACK_BISHOP       BLACK_QUEEN         BLACK_KING      BLACK_BISHOP        BLACK_KNIGHT        BLACK_ROOK)
+   (beside BLACK_PAWN       BLACK_PAWN       BLACK_PAWN         BLACK_PAWN          BLACK_PAWN      BLACK_PAWN          BLACK_PAWN          BLACK_PAWN)
+   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
+   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
+   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
+   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
+   (beside WHITE_PAWN       WHITE_PAWN       WHITE_PAWN         WHITE_PAWN          WHITE_PAWN      WHITE_PAWN          WHITE_PAWN          WHITE_PAWN)
+   (beside WHITE_ROOK       WHITE_KNIGHT     WHITE_BISHOP       WHITE_QUEEN         WHITE_KING      WHITE_BISHOP        WHITE_KNIGHT        WHITE_ROOK)))
+
+
+(define EMPTY_CHESSBOARD
+  (above (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)))
+
+(define (place_pieces mop mos row_acc col_acc)
+  (cond
+    [(= row_acc 8) #t]
+    [else
+     (place-image (vector-ref (vector-ref mop row_acc) col_acc) (+ 50 (* 100 row_acc)) (+ 50 (* 100 col_acc)) ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
