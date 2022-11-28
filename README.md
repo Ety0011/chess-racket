@@ -2,10 +2,9 @@
 
 Chess game in Racket
 
-## TODO 
-write a function that takes in a vector of cells and returns an 
-image which is the representation of the board.
+by Leonardo Asaro, Pietro Quintavalle, Etyenne Orio, Krit Nicol
 
-find a good way to implement moves
+# MILESTONE 1
+- Defined a piece struct which holds a type (which can be pawn, rook, knight, bishop, queen, king or empty) and a color (which is a boolean #f for black and #t for white).
 
-write a function to validate said moves
+- Defined the board as a matrix (so a vector of 8 vectors, each representing a line of the chessboard) and a way to draw the pieces on the matrix.
