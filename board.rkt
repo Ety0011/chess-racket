@@ -30,6 +30,26 @@
 ;    - canvas -> image result from the vector of cells
 (define-struct board [cells canvas])
 
+; Data Types
+; a Piece is a struct (make-piece color posn type) where
+; - color: Boolean where black is #f and white is #t
+; - posn: Posn where x is the column and y is the row
+; - type: String
+; - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; FUNCTIONS
