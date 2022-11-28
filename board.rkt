@@ -107,11 +107,12 @@ A Matrix is a Vector of Vectors of Cells
          (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
          (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)))
 
-(define (place_pieces mop mos row_acc col_acc)
+(define (place_pieces pieces chessboard row_acc col_acc)
   (cond
-    [(= row_acc 8) #t]
-    [else
-     (place-image (vector-ref (vector-ref mop row_acc) col_acc) (+ 50 (* 100 row_acc)) (+ 50 (* 100 col_acc)) ]
+    [(> row_acc 7) chessboard]
+    [(> col_acc 7) (place_pieces pieces chessboard (add1 row_acc) 0)]
+    [else (place-image (vector-ref (vector-ref pieces row_acc) col_acc) (+ 50 (* 100 col_acc)) (+ 50 (* 100 row_acc)) (place_pieces pieces chessboard row_acc (add1 col_acc)))]))
+
 
 
 
