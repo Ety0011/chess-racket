@@ -1,0 +1,4 @@
+; Data Types
+; a Piece is a struct (make-piece color posn type) where
+; - color: Boolean where black is 0 and white is 1
+; - posn: Posn 

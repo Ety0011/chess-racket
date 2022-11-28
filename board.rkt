@@ -21,9 +21,8 @@
 (define-struct piece [type moves color])
 
 ; CELL
-; A cell is a struct with a value
-;   - value -> one of EMPTY, PIECE
-(define-struct cell [value])
+; A Cell is one of:
+; - 
 
 ;; BOARD
 ; A board is a vector of cells and a canvas
