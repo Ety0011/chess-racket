@@ -60,6 +60,8 @@
 ;;TODO: write template and tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;TODO: a way to check for checks/checkmate
+
 ;;PROVIDES
 (provide piece)
 (provide cell)
