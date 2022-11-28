@@ -3,29 +3,24 @@
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname test) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 (require 2htdp/image)
 
-(define WHITE_KING      (bitmap "img/WHITE_KING.png"))
-(define WHITE_QUEEN     (bitmap "img/WHITE_QUEEN.png"))
-(define WHITE_ROOK      (bitmap "img/WHITE_ROOK.png"))
-(define WHITE_BISHOP    (bitmap "img/WHITE_BISHOP.png"))
-(define WHITE_KNIGHT    (bitmap "img/WHITE_KNIGHT.png"))
-(define WHITE_PAWN      (bitmap "img/WHITE_PAWN.png"))
+(define WHITE_KING      (text "WHITE_KING" 10 "white"))
+(define WHITE_QUEEN     (text "WHITE_QUEEN" 10 "white"))
+(define WHITE_ROOK      (text "WHITE_ROOK" 10 "white"))
+(define WHITE_BISHOP    (text "WHITE_BISHOP" 10 "white"))
+(define WHITE_KNIGHT    (text "WHITE_KNIGHT" 10 "white"))
+(define WHITE_PAWN      (text "WHITE_PAWN" 10 "white"))
 
 ; Definition of the black pieces
-(define BLACK_KING      (bitmap "img/BLACK_KING.png"))
+(define BLACK_KING      (text "BLACK_KING" 10 "white"))
 (define BLACK_QUEEN     (bitmap "img/BLACK_QUEEN.png"))
-(define BLACK_ROOK      (bitmap "img/BLACK_ROOK.png"))
-(define BLACK_BISHOP    (bitmap "img/BLACK_BISHOP.png"))
-(define BLACK_KNIGHT    (bitmap "img/BLACK_KNIGHT.png"))
-(define BLACK_PAWN      (bitmap "img/BLACK_PAWN.png"))
+(define BLACK_ROOK      (text "BLACK_ROOK" 10 "white"))
+(define BLACK_BISHOP    (text "BLACK_BISHOP" 10 "white"))
+(define BLACK_KNIGHT    (text "BLACK_KNIGHT" 10 "white"))
+(define BLACK_PAWN      (text "BLACK_PAWN" 10 "white"))
 
 (define EMPTY           (text "EMPTY" 10 "white"))
-
-(define dark_wood (make-color 191 108 58))
-(define light_wood (make-color 238 202 160))
-
-(define SQUARE_SIDE 100)
-(define ODD_SQUARE (square SQUARE_SIDE "solid" light_wood))
-(define EVEN_SQUARE (square SQUARE_SIDE "solid" dark_wood))
+(define SQUARE1 (square 100 "solid" "black"))
+(define SQUARE2 (square 100 "solid" "grey"))
 
 (define CHESSBOARD
   (vector
@@ -40,14 +35,14 @@
 
 
 (define EMPTY_CHESSBOARD
-  (above (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
-         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
-         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
-         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)))
+  (above (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
+         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
+         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)))
 
 (define (place_pieces pieces chessboard row_acc col_acc)
   (cond
