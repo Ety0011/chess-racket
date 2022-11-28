@@ -53,7 +53,7 @@
 (define CELL16 (make-cell EMPTY))
 ; ...
 
-(define BOARD (vector A1  A2  A3  A4 A5  A6  A7  A8
+(define BOARD (vector A1  A2  A3  A4 A5  A6  A7  A8))
                       CELL9  CELL10 CELL11 CELL12 CELL13 CELL14 CELL15 CELL16
                       CELL17  CELL18 CELL19 CELL20 CELL21 CELL22 CELL23 CELL24
                       CELL25  CELL26 CELL27 CELL28 CELL29 CELL30 CELL31 CELL32
