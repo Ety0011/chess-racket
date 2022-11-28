@@ -3,6 +3,7 @@
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname chess) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 (require htdp/universe)
 (require "board.rkt")
+(require "moves.rkt")
 
 ;; INITIAL VALUES
 ; PAWN piece
