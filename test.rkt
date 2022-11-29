@@ -1,6 +1,7 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname test) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
+(require racket/base)
 (require 2htdp/image)
 
 (define WHITE_KING      (bitmap "img/WHITE_KING.png"))
@@ -27,7 +28,7 @@
 (define ODD_SQUARE (square SQUARE_SIDE "solid" light_wood))
 (define EVEN_SQUARE (square SQUARE_SIDE "solid" dark_wood))
 
-(define CHESSBOARD
+(define CHESSBOARD2
   (vector
    (vector BLACK_ROOK       BLACK_KNIGHT     BLACK_BISHOP       BLACK_QUEEN         BLACK_KING      BLACK_BISHOP        BLACK_KNIGHT        BLACK_ROOK)
    (vector BLACK_PAWN       BLACK_PAWN       BLACK_PAWN         BLACK_PAWN          BLACK_PAWN      BLACK_PAWN          BLACK_PAWN          BLACK_PAWN)
@@ -57,4 +58,100 @@
 
 
 
-(place_pieces CHESSBOARD EMPTY_CHESSBOARD 0 0)
+; New section with bitboards
+
+(define WK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WP #b0000000000000000000000000000000000000000000000000000000000000000)
+
+(define BK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BP #b0000000000000000000000000000000000000000000000000000000000000000)
+
+(define BITBOARDS
+  (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
+
+(define EMTPY_CHESSBOARD
+  (vector
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")))
+
+(define CHESSBOARD
+  (vector
+   (vector "r" "n" "b" "q" "k" "b" "n" "r")
+   (vector "p" "p" "p" "p" "p" "p" "p" "p")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector "P" "P" "P" "P" "P" "P" "P" "P")
+   (vector "R" "N" "B" "Q" "K" "B" "N" "R")))
+
+(define (matrix_get matrix row col)
+  (vector-ref (vector-ref matrix row) col))
+
+(define (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN BP k_acc)
+  (cond
+    [(equal? 64 k_acc) (vector WK WQ WR WB WN WP BK BQ BR BB BN BP)]
+    [(equal? "K" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD (+ WK (arithmetic-shift 1 (- 63 k_acc))) WQ WR WB WN WP BK BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "Q" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK (+ WQ (arithmetic-shift 1 (- 63 k_acc))) WR WB WN WP BK BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "R" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ (+ WR (arithmetic-shift 1 (- 63 k_acc))) WB WN WP BK BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "B" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR (+ WB (arithmetic-shift 1 (- 63 k_acc))) WN WP BK BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "N" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB (+ WN (arithmetic-shift 1 (- 63 k_acc))) WP BK BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "P" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN (+ WP (arithmetic-shift 1 (- 63 k_acc))) BK BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "k" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP (+ BK (arithmetic-shift 1 (- 63 k_acc))) BQ BR BB BN BP (add1 k_acc))]
+    [(equal? "q" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK (+ BQ (arithmetic-shift 1 (- 63 k_acc))) BR BB BN BP (add1 k_acc))]
+    [(equal? "r" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ (+ BR (arithmetic-shift 1 (- 63 k_acc))) BB BN BP (add1 k_acc))]
+    [(equal? "b" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR (+ BB (arithmetic-shift 1 (- 63 k_acc))) BN BP (add1 k_acc))]
+    [(equal? "n" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB (+ BN (arithmetic-shift 1 (- 63 k_acc))) BP (add1 k_acc))]
+    [(equal? "p" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN (+ BP (arithmetic-shift 1 (- 63 k_acc))) (add1 k_acc))]
+    [(equal? " " (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+                  (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN BP (add1 k_acc))]))
+
+(define (bitBoardsToMatrix EMTPY_CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN BP k_acc)
+  (cond
+    [(equal? 64 k_acc) EMTPY_CHESSBOARD]
+    [(equal? 1 (bitwise-and(arithmetic-shift 1 (- 63 k_acc)) 1))
+     (bitBoardsToMatrix  WK WQ WR WB WN WP BK BQ BR BB BN BP k_acc)]
+
+    
+(matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN BP 0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
