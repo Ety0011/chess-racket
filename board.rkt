@@ -234,6 +234,7 @@ A Matrix is a Vector of Vectors of Cells
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;TODO: a way to check for checks/checkmate
+(define CHECK-MATE(board ))
 
 ;;PROVIDES
 (provide piece)
