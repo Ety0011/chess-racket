@@ -147,15 +147,10 @@
 (define (printBitBoardLine bb line)
   (writeln (~r (arithmetic-shift (bitwise-and (arithmetic-shift #x00000000000000FF (* 8 line)) bb) (* -8 line) ) #:base 2 #:min-width 8 #:pad-string "0")))
 
-;; prints whole bitboard
-(define (printBitBoard bb acc)
-  (cond
-    [(= acc 8) #t]
-    [else
-     (begin (printBitBoardLine bb acc))
-     (begin (printBitBoard bb (add1 acc)))]))
-
 (define testBB #b0000000011111111000000000000000000000000000000000000000000000000)
+
+
+
 
 ;;;;;;; TEST
 
@@ -171,7 +166,21 @@
 
 (define whites (get-whites tWP tWR tWN))
 
-(printBitBoard whites 0)
+(printBitBoardLine whites 0)
+(printBitBoardLine whites 1)
+(printBitBoardLine whites 2)
+(printBitBoardLine whites 3)
+(printBitBoardLine whites 4)
+(printBitBoardLine whites 5)
+(printBitBoardLine whites 6)
+(printBitBoardLine whites 7)
+
+;; where r is the bitmap of the rook
+;; where rpos is the position of a specific rook
+(define (rook-attacks r rpos)
+  (bitwise-ior r (arithmetic-shift rpos 16)))
+
+
 
 
 
