@@ -1,10 +1,6 @@
-;; The first three lines of this file were inserted by DrRacket. They record metadata
-;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-advanced-reader.ss" "lang")((modname moves) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
-#reader(lib "htdp-advanced-reader.ss" "lang")((modname test) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
-
+#lang racket
 (require 2htdp/universe)
-
+(require board.rkt)
 
 
 ;DATA TYPE
@@ -22,19 +18,34 @@
 
 ; Mossa Pietro
 ;;Knight
-; returns the moveset of the knight
+; returns the moveset of the knight from the North-West 
 (define (KNIGHT-NW bit-board row col)
-    (cond
-    [(and(= col 1)(= row 2)) (bit-board(and(arithmetic-shift col 1)(arithmetic-shift row 2)))]
-    [(and(= col -1)(= row 2)) (bit-board(and(arithmetic-shift col -1)(arithmetic-shift row 2)))]
-    [(and(= col 2)(= row 1)) (bit-board(and(arithmetic-shift col 2)(arithmetic-shift row 1)))]
-    [(and(= col 2)(= row -1)) (bit-board(and(arithmetic-shift col 2)(arithmetic-shift row -1)))]
-    [(and(= col -2)(= row 1)) (bit-board(and(arithmetic-shift col -2)(arithmetic-shift row 1)))]
-    [(and(= col -2)(= row -1)) (bit-board(and(arithmetic-shift col -2)(arithmetic-shift row -1)))]
-    [(and(= col 1)(= row -2)) (bit-board(and(arithmetic-shift col 1)(arithmetic-shift row -2)))]
-    [(and(= col -1)(= row -2)) (bit-board(and(arithmetic-shift col -1)(arithmetic-shift row -2)))]
+    (local [define row (arithmetic-shift #b11111111 (*2 row))]
+        (bitwise-xor bit-board row)
     )
+    (local [define col (arithmetic-shift )])
 )
+; returns the moveset of the knight from the North-East 
+(define (KNIGHT-NE bit-board row col)
+    
+)
+; returns the moveset of the knight from the South-West 
+(define (KNIGHT-SW bit-board row col)
+    
+)
+; returns the moveset of the knight from the South-East 
+(define (KNIGHT-SE bit-board row col)
+    
+)
+; returns the moveset of the knight from the West 
+(define (KNIGHT-W bit-board row col)
+    
+)
+; returns the moveset of the knight from the East 
+(define (KNIGHT-E bit-board row col)
+    
+)
+
 
 
 
