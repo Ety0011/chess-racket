@@ -13,7 +13,16 @@
 ;(define (PAWN-MOVES bitmap lom))
 
 ; Mossa Ety
-;(define KING-MOVES())
+
+
+
+
+
+
+
+
+
+
 
 ; Mossa Pietro
 ;(define (KNIGHT-MOVES))
