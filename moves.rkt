@@ -53,5 +53,16 @@
 ; Mossa Leo
 ;(define BISHOP-MOVES())
 
+
+
+;; bishop-basics : Number (Number Number) -> Number
+; Takes the bitboard where here is only one bit set, which is the bishop. The other
+; two numbers are temporary and will be taken from the matrix
+;
+; The result of this will be used for further calculations that will account for
+; other pieces / possible captures
+(define (bishop-basic bit-board row col)
+    #f)
+
 ; Mossa Ety
 ;(define (QUEEN-MOVES))
