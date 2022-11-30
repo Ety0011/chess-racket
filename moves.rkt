@@ -84,6 +84,58 @@
 
 ; Mossa Leo
 ;(define BISHOP-MOVES())
+;; tutto copia incollato da drracket perchè non ho sbatti ora
+
+;; le due diagonali della scacchiera
+(define main-diag #b1000000001000000001000000001000000001000000001000000001000000001)
+(define anti-diag #b0000000100000010000001000000100000010000001000000100000010000000)
+
+; questi numeri vengono shiftati a destra e sinistra per "pulire" le diagonali, in modo
+; tale da non avere bit in eccesso 
+(define cleanupleft    #b0000011111111111111111111111111111111111111111111111111111111111)
+(define cleanupright   #b1111111111111111111111111111111111111111111111111111111111100000)
+
+(define (bishop-main-left bb clean shl/acc)
+  (local [(define diag (bitwise-and (arithmetic-shift main-diag shl/acc) (arithmetic-shift clean (- shl/acc))))]
+  (cond
+    [(= 8 shl/acc) 0]
+    [(not (zero? (bitwise-and bb diag))) diag]
+    [else
+     (bishop-main-left bb (arithmetic-shift clean -4) (add1 shl/acc))])))
+
+
+
+(define (bishop-main-right bb clean shr/acc)
+  (local [(define diag (bitwise-and (arithmetic-shift main-diag (- shr/acc)) (arithmetic-shift clean shr/acc)))]
+     (cond
+       [(= 8 shr/acc) 0]
+       [(not (zero? (bitwise-and bb diag))) diag]
+       [else
+        (bishop-main-right bb (arithmetic-shift clean 2) (add1 shr/acc))])))
+
+
+
+(define (bishop-anti-left bb clean shl/acc)
+  (local [(define diag (bitwise-and (arithmetic-shift anti-diag shl/acc) (arithmetic-shift clean shl/acc) ))]
+    (cond
+      [(= 8 shl/acc) 0]
+      [(not (zero? (bitwise-and bb diag))) diag]
+      [else
+       (bishop-anti-left bb (arithmetic-shift clean 8) (add1 shl/acc))])))
+
+
+(define (bishop-anti-right bb clean shr/acc)
+  (local [(define diag (bitwise-and (arithmetic-shift anti-diag (- shr/acc)) (arithmetic-shift clean shr/acc)))]
+    (cond
+      [(= 8 shr/acc) 0]
+      [(not (zero? (bitwise-and bb diag))) diag]
+      [else
+       (bishop-anti-right bb (arithmetic-shift clean -8) (add1 shr/acc))])))
+
+(define (bishop-main bb)
+  (bitwise-xor (bitwise-ior (bishop-main-left bb cleanupleft 0) (bishop-main-right bb cleanupright 0))
+               (bitwise-ior (bishop-anti-left bb cleanupleft 0) (bishop-anti-right bb cleanupright 0)))) 
+
 
 
 
