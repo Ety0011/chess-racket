@@ -197,17 +197,6 @@
 (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS 0)
 
 
-
-
-
-
-    [(equal? 1 (bitwise-and(arithmetic-shift 1 (- 63 k_acc)) 1))
-     (bitBoardsToMatrix  WK WQ WR WB WN WP BK BQ BR BB BN BP k_acc)]))
-
-    
-(matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN BP 0)
-
-
 ;; prints line of a bitboard
 (define (printBitBoardLine bb line)
   (writeln (~r (arithmetic-shift (bitwise-and (arithmetic-shift #x00000000000000FF (* 8 line)) bb) (* -8 line) ) #:base 2 #:min-width 8 #:pad-string "0")))
