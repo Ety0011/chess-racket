@@ -210,15 +210,15 @@
 
 
 
-(define (reverseBinaryNumber b k_acc total_sum)
+(define (reverseBinary2 b k_acc total_sum)
   (cond
     [(equal? 64 k_acc) total_sum]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift b (- k_acc 63))))
-       (reverseBinaryNumber b (add1 k_acc) (+ total_sum (arithmetic-shift 1 k_acc)))]
-    [else (reverseBinaryNumber b (add1 k_acc) total_sum)]))
+       (reverseBinary2 b (add1 k_acc) (+ total_sum (arithmetic-shift 1 k_acc)))]
+    [else (reverseBinary2 b (add1 k_acc) total_sum)]))
 
 (define (reverseBinary b)
-  (reverseBinaryNumber b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
+  (reverseBinary2 b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
 
 
 (define (bitBoardsXOR BITBOARDS k_acc)
@@ -263,40 +263,26 @@
                    (reverseBinary (- (reverseBinary OCCUPIED) (* 2 (reverseBinary binaryPosition))))))
     (define verticalMoves
       (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo matrixPosition 8))) (* 2 binaryPosition))
-                   (reverseBinary (- (bitwise-and (reverseBinary OCCUPIED) (vector-ref FILEMASKS (modulo matrixPosition 8))) (* 2 (reverseBinary binaryPosition)))))))
-    (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ matrixPosition 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (floor (modulo matrixPosition 8)))))))
-    
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo matrixPosition 8)))) (* 2 (reverseBinary binaryPosition)))))))
+    (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ matrixPosition 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo matrixPosition 8))))))
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(define (printBitBoards BITBOARDS k_acc)
+(define (printBitBoards2 BITBOARDS k_acc)
   (cond
     [(equal? 12 k_acc) (void)]
     [else
      (begin (writeln (~r (vector-ref BITBOARDS k_acc) #:base 2 #:min-width 64 #:pad-string "0")))
-     (begin (printBitBoards BITBOARDS (add1 k_acc)))]))
+     (begin (printBitBoards2 BITBOARDS (add1 k_acc)))]))
+
+(define (printBitBoards BITBOARDS)
+  (printBitBoards2 BITBOARDS 0))
+
+
+
+
 
 (define (printBitBoard2 BITBOARD k_acc)
   (cond
@@ -305,45 +291,11 @@
      (begin (writeln (~r (bitwise-and (arithmetic-shift BITBOARD (* -8 (- 7 k_acc))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0")))
      (begin (printBitBoard2 BITBOARD (add1 k_acc)))]))
 
-00001001
-00000000
-00000000
-00000000
-11001011
-00001000
-00001000
-00000000
+(define (printBitBoard BITBOARD)
+  (printBitBoard2 BITBOARD 0))
 
-;; prints line of a bitboard
-(define (printBitBoardLine bb line)
-  (writeln (~r (arithmetic-shift (bitwise-and (arithmetic-shift #x00000000000000FF (* 8 line)) bb) (* -8 line) ) #:base 2 #:min-width 8 #:pad-string "0")))
 
-;; prints whole bitboard
-(define (printBitBoard bb acc)
-  (cond
-    [(= acc 8) (void)]
-    [else
-     (begin (printBitBoardLine bb acc))
-     (begin (printBitBoard bb (add1 acc)))]))
 
-(define testBB #b0000000011111111000000000000000000000000000000000000000000000000)
-
-;;;;;;; TEST
-
-(define empty #b0000000000000000000000000000000000000000000000000000000000000000)
-(define full  #b1111111111111111111111111111111111111111111111111111111111111111)
-
-(define tWP   #b0000000000000000000000000000000000000000000000000111111000000000)
-(define tWR   #b0000000000000000000000000000000000000000000000000000000010000001)
-(define tWN   #b0000000000000000000000000000000000000000000000000000000001000010)
-
-(define (get-whites wp wr wn)
-  ( bitwise-ior (bitwise-ior wp wr) wn) )
-
-(define whites (get-whites tWP tWR tWN))
-
-(printBitBoard OCCUPIED 0)
-#t
-(printBitBoard2 OCCUPIED 0)
+(printBitBoard OCCUPIED)
 
 
