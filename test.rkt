@@ -197,6 +197,31 @@
 (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS 0)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(define (printBitboards BITBOARDS k_acc)
+  (cond
+    [(equal? 12 k_acc) (void)]
+    [else
+     (begin (writeln (~r (vector-ref BITBOARDS k_acc) #:base 2 #:min-width 64 #:pad-string "0")))
+     (begin (printBitboards BITBOARDS (add1 k_acc)))]))
+
 ;; prints line of a bitboard
 (define (printBitBoardLine bb line)
   (writeln (~r (arithmetic-shift (bitwise-and (arithmetic-shift #x00000000000000FF (* 8 line)) bb) (* -8 line) ) #:base 2 #:min-width 8 #:pad-string "0")))
@@ -227,7 +252,7 @@
 
 (printBitBoard whites 0)
 
-
+(printBitboards BITBOARDS 0)
 
 
 
