@@ -2,6 +2,7 @@
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-advanced-reader.ss" "lang")((modname test) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 (require racket/base)
+(require racket/format)
 (require 2htdp/image)
 
 (define WHITE_KING      (bitmap "img/WHITE_KING.png"))
@@ -136,18 +137,48 @@
   (cond
     [(equal? 64 k_acc) EMTPY_CHESSBOARD]
     [(equal? 1 (bitwise-and(arithmetic-shift 1 (- 63 k_acc)) 1))
-     (bitBoardsToMatrix  WK WQ WR WB WN WP BK BQ BR BB BN BP k_acc)]
+     (bitBoardsToMatrix  WK WQ WR WB WN WP BK BQ BR BB BN BP k_acc)]))
 
     
 (matrixToBitBoards CHESSBOARD WK WQ WR WB WN WP BK BQ BR BB BN BP 0)
 
 
+;; prints line of a bitboard
+(define (printBitBoardLine bb line)
+  (writeln (~r (arithmetic-shift (bitwise-and (arithmetic-shift #x00000000000000FF (* 8 line)) bb) (* -8 line) ) #:base 2 #:min-width 8 #:pad-string "0")))
+
+(define testBB #b0000000011111111000000000000000000000000000000000000000000000000)
 
 
 
 
+;;;;;;; TEST
 
+(define empty #b0000000000000000000000000000000000000000000000000000000000000000)
+(define full  #b1111111111111111111111111111111111111111111111111111111111111111)
 
+(define tWP   #b0000000000000000000000000000000000000000000000000111111000000000)
+(define tWR   #b0000000000000000000000000000000000000000000000000000000010000001)
+(define tWN   #b0000000000000000000000000000000000000000000000000000000001000010)
+
+(define (get-whites wp wr wn)
+  ( bitwise-ior (bitwise-ior wp wr) wn) )
+
+(define whites (get-whites tWP tWR tWN))
+
+(printBitBoardLine whites 0)
+(printBitBoardLine whites 1)
+(printBitBoardLine whites 2)
+(printBitBoardLine whites 3)
+(printBitBoardLine whites 4)
+(printBitBoardLine whites 5)
+(printBitBoardLine whites 6)
+(printBitBoardLine whites 7)
+
+;; where r is the bitmap of the rook
+;; where rpos is the position of a specific rook
+(define (rook-attacks r rpos)
+  (bitwise-ior r (arithmetic-shift rpos 16)))
 
 
 
