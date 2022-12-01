@@ -239,9 +239,19 @@
 ;   - the bitshift represents the direction of where the piece can go
 ;   - there are the new coordinates of the pieces after the bitshift
 
-; Mossa Pietr0
+; Mossa Pietro
 ;;Pawn
-;(define (PAWN-MOVES bitmap lom))
+(define FILE_P #b0000000100000001000000010000000100000001000000010000000100000001)
+(define (PawnMoves matrixPosition)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 55 matrixPosition))))
+    (bitwise-ior
+      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 7)
+      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 8)
+      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 9)
+      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 16))))
+     
 
 ; Mossa Ety
 (define (reverseBinary2 b k_acc total_sum)
