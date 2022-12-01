@@ -378,28 +378,19 @@
     )
 )
 
-
-; knight test
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
       (numberOfTrailingZeros bb (add1 no-zeroes))))
 
-;(define (kinght-move bb)
-;  ())
 
-;; KING
-
-;(printBitBoard 134217728)
-
-
-(define KNIGHT       #b0000000000000000000000000000000000001000000000000000000000000000)
-(define NOT_WHITE    #b0000000001100000000001000001000000001100000010100000000000010010)
+;; useful constants
 (define FILE_H       #b0000000100000001000000010000000100000001000000010000000100000001)
 (define FILE_A       #b1000000010000000100000001000000010000000100000001000000010000000)
 (define FILE_GH      #b0000001100000011000000110000001100000011000000110000001100000011)
 (define FILE_AB      #b1100000011000000110000001100000011000000110000001100000011000000) 
 
-
+;; all possible knight moves
+; NOTE: once all the pieces are done, we have to xor this with the allied pieces / captures
 (define (knight-moves bb) 
   (bitwise-xor 
                 ;; EAST
@@ -413,7 +404,18 @@
                             (bitwise-ior (bitwise-and (arithmetic-shift bb -10) (bitwise-not FILE_AB)) 
                                          (bitwise-and (arithmetic-shift bb -17) (bitwise-not FILE_A)))))) 
 
-(define test (knight-moves KNIGHT))
-(printBitBoard test) 
 
-
+;; all possible king moves
+; NOTE: once all the pieces are done, we have to xor this with allied pieces, possible captures,
+;       and most importantly enemy attacks
+(define (kingMoves bb) 
+  (bitwise-xor 
+               (bitwise-ior (bitwise-ior (bitwise-and (arithmetic-shift bb 8)   #xffffffffffffffff) 
+                                         (bitwise-and (arithmetic-shift bb -8)  #xffffffffffffffff)) 
+                            (bitwise-ior (bitwise-and (arithmetic-shift bb 7)   (bitwise-not FILE_A)) 
+                                         (bitwise-and (arithmetic-shift bb -7)  (bitwise-not FILE_H))))
+               
+               (bitwise-ior (bitwise-ior (bitwise-and (arithmetic-shift bb 9)   (bitwise-not FILE_H)) 
+                                         (bitwise-and (arithmetic-shift bb -9)  (bitwise-not FILE_A))) 
+                            (bitwise-ior (bitwise-and (arithmetic-shift bb 1)   (bitwise-not FILE_H)) 
+                                         (bitwise-and (arithmetic-shift bb -1)  (bitwise-not FILE_A))))))
