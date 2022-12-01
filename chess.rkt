@@ -381,7 +381,7 @@
 
 ; knight test
 (define (numberOfTrailingZeros bb no-zeroes)
-  (if (not (zero? (bitwise-and bb (arithmetic-shift 1 no-zeroes)))) no-zeroes
+  (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
       (numberOfTrailingZeros bb (add1 no-zeroes))))
 
 (define (kinght-move bb)
