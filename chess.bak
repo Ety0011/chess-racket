@@ -1,6 +1,3 @@
-;; The first three lines of this file were inserted by DrRacket. They record metadata
-;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-advanced-reader.ss" "lang")((modname chess) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
 (require racket/base)
 (require racket/format)
 (require 2htdp/image)
@@ -205,8 +202,18 @@
      (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) " "))
      (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]))
 
-(matrixToBitBoards TEST_CHESSBOARD BITBOARDS 0)
-(bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS 0)
+(define (printBitBoards2 BITBOARDS k_acc)
+  (cond
+    [(equal? 12 k_acc) (void)]
+    [else
+     (begin (writeln (~r (vector-ref BITBOARDS k_acc) #:base 2 #:min-width 64 #:pad-string "0")))
+     (begin (printBitBoards2 BITBOARDS (add1 k_acc)))]))
+
+(define (printBitBoards BITBOARDS)
+  (printBitBoards2 BITBOARDS 0))
+
+
+
 
 
 (define (printBitBoard2 BITBOARD k_acc)
@@ -220,18 +227,19 @@
   (printBitBoard2 BITBOARD 0))
 
 
-(define (printBitBoards2 BITBOARDS k_acc)
-  (cond
-    [(equal? (vector-length BITBOARDS) k_acc) (void)]
-    [else
-     (begin (writeln "        "))
-     (begin  (printBitBoard (vector-ref BITBOARDS k_acc)))
-     (begin (printBitBoards2 BITBOARDS (add1 k_acc)))]))
 
-(define (printBitBoards BITBOARDS)
-  (printBitBoards2 BITBOARDS 0))
+(matrixToBitBoards TEST_CHESSBOARD BITBOARDS 0)
+(bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS 0)
+
 
 ;=============================================================================================
+
+
+
+
+
+
+
 
 ;DATA TYPE
 ;A piece-move is a bitwise operation where: 
@@ -287,44 +295,6 @@
    #b0000001000000010000000100000001000000010000000100000001000000010
    #b0000000100000001000000010000000100000001000000010000000100000001))
 
-(define DIAGONALMASKS
-  (vector
-   #b1000000000000000000000000000000000000000000000000000000000000000
-   #b0100000010000000000000000000000000000000000000000000000000000000
-   #b0010000001000000100000000000000000000000000000000000000000000000
-   #b0001000000100000010000001000000000000000000000000000000000000000
-   #b0000100000010000001000000100000010000000000000000000000000000000
-   #b0000010000001000000100000010000001000000100000000000000000000000
-   #b0000001000000100000010000001000000100000010000001000000000000000
-   #b0000000100000010000001000000100000010000001000000100000010000000
-   #b0000000000000001000000100000010000001000000100000010000001000000
-   #b0000000000000000000000010000001000000100000010000001000000100000
-   #b0000000000000000000000000000000100000010000001000000100000010000
-   #b0000000000000000000000000000000000000001000000100000010000001000
-   #b0000000000000000000000000000000000000000000000010000001000000100
-   #b0000000000000000000000000000000000000000000000000000000100000010
-   #b0000000000000000000000000000000000000000000000000000000000000001))
-
-(define ANTIDIAGONALMASKS
-  (vector
-   #b0000000100000000000000000000000000000000000000000000000000000000
-   #b0000001000000001000000000000000000000000000000000000000000000000
-   #b0000010000000010000000010000000000000000000000000000000000000000
-   #b0000100000000100000000100000000100000000000000000000000000000000
-   #b0001000000001000000001000000001000000001000000000000000000000000
-   #b0010000000010000000010000000010000000010000000010000000000000000
-   #b0100000000100000000100000000100000000100000000100000000100000000
-   #b1000000001000000001000000001000000001000000001000000001000000001
-   #b0000000010000000010000000010000000010000000010000000010000000010
-   #b0000000000000000100000000100000000100000000100000000100000000100
-   #b0000000000000000000000001000000001000000001000000001000000001000
-   #b0000000000000000000000000000000010000000010000000010000000010000
-   #b0000000000000000000000000000000000000000100000000100000000100000
-   #b0000000000000000000000000000000000000000000000001000000001000000
-   #b0000000000000000000000000000000000000000000000000000000010000000))
-
-
-
 
 (define (horizontalVerticalMoves matrixPosition)
   (local
@@ -339,24 +309,10 @@
     (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ matrixPosition 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo matrixPosition 8))))))
 
 
-(define (DiagonalAntiDiagonalMoves matrixPosition)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 matrixPosition)))
-    (define DiagonalMoves
-      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ matrixPosition 8)) (modulo matrixPosition 8))))) (* 2 (reverseBinary binaryPosition))))))
-    (define AntiDiagonalMoves
-      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ matrixPosition 8)) (- 7 (modulo matrixPosition 8))))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ matrixPosition 8)) (- 7 (modulo matrixPosition 8)))))) (* 2 (reverseBinary binaryPosition)))))))
-    (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ matrixPosition 8)) (- 7 (modulo matrixPosition 8))))))))
 
 
 
 
-(printBitBoard OCCUPIED)
-"        "
-(printBitBoard (DiagonalAntiDiagonalMoves 43))
 
 
 
