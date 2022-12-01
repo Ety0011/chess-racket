@@ -376,14 +376,14 @@
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 matrixPosition))))
     (bitwise-ior
+     (arithmetic-shift (bitwise-and binaryPosition FILE_A) 1)
      (arithmetic-shift (bitwise-and binaryPosition FILE_A) 9)
      (arithmetic-shift              binaryPosition         8)
      (arithmetic-shift (bitwise-and binaryPosition FILE_H) 7)
      (arithmetic-shift (bitwise-and binaryPosition FILE_H) -1)
      (arithmetic-shift (bitwise-and binaryPosition FILE_H) -9)
      (arithmetic-shift              binaryPosition         -8)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) -7)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) 1))))
+     (arithmetic-shift (bitwise-and binaryPosition FILE_A) -7))))
 
 
 
