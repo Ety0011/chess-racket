@@ -1,59 +1,35 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-advanced-reader.ss" "lang")((modname board) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #t #t none #f () #f)))
+(require racket/base)
+(require racket/format)
 (require 2htdp/image)
-(require htdp/universe)
 
-(define BLACK #f)
-(define WHITE #t)
-
-;; DATA TYPES
-A Type is one of those Strings:
-; - "king"
-; - "queen"
-; - "rook"
-; - "bishop"
-; - "knight"
-; - "pawn"
-
-; A Piece is a struct (make-piece type color) where
-;   - type      -> a String which indicates the type
-;   - color     -> Boolean where is BLACK or WHITE
-(define-struct piece [type color])
-
-
-; Definition of the white pieces
-(define WHITE_KING      (make-piece     "king"      WHITE))
-(define WHITE_QUEEN     (make-piece     "queen"     WHITE))
-(define WHITE_ROOK      (make-piece     "rook"      WHITE))
-(define WHITE_BISHOP    (make-piece     "bishop"    WHITE))
-(define WHITE_KNIGHT    (make-piece     "knight"    WHITE))
-(define WHITE_PAWN      (make-piece     "pawn"      WHITE))
+(define WHITE_KING      (bitmap "img/WHITE_KING.png"))
+(define WHITE_QUEEN     (bitmap "img/WHITE_QUEEN.png"))
+(define WHITE_ROOK      (bitmap "img/WHITE_ROOK.png"))
+(define WHITE_BISHOP    (bitmap "img/WHITE_BISHOP.png"))
+(define WHITE_KNIGHT    (bitmap "img/WHITE_KNIGHT.png"))
+(define WHITE_PAWN      (bitmap "img/WHITE_PAWN.png"))
 
 ; Definition of the black pieces
-(define BLACK_KING      (make-piece     "king"      BLACK))
-(define BLACK_QUEEN     (make-piece     "queen"     BLACK))
-(define BLACK_ROOK      (make-piece     "rook"      BLACK))
-(define BLACK_BISHOP    (make-piece     "bishop"    BLACK))
-(define BLACK_KNIGHT    (make-piece     "knight"    BLACK))
-(define BLACK_PAWN      (make-piece     "pawn"      BLACK))
+(define BLACK_KING      (bitmap "img/BLACK_KING.png"))
+(define BLACK_QUEEN     (bitmap "img/BLACK_QUEEN.png"))
+(define BLACK_ROOK      (bitmap "img/BLACK_ROOK.png"))
+(define BLACK_BISHOP    (bitmap "img/BLACK_BISHOP.png"))
+(define BLACK_KNIGHT    (bitmap "img/BLACK_KNIGHT.png"))
+(define BLACK_PAWN      (bitmap "img/BLACK_PAWN.png"))
 
-(define EMPTY "empty")
-(define CELL_SIDE 100)
+(define EMPTY           (text "EMPTY" 10 "white"))
 
-; Cell is one of:
-;   - Piece
-;   - EMPTY
+(define dark_wood (make-color 191 108 58))
+(define light_wood (make-color 238 202 160))
 
-(define EMPTY_CHESSBOARD
-  (above (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
-         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
-         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
-         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)))
+(define SQUARE_SIDE 100)
+(define ODD_SQUARE (square SQUARE_SIDE "solid" light_wood))
+(define EVEN_SQUARE (square SQUARE_SIDE "solid" dark_wood))
 
-A Matrix is a Vector of Vectors of Cells
-(define CHESSBOARD
+(define CHESSBOARD2
   (vector
    (vector BLACK_ROOK       BLACK_KNIGHT     BLACK_BISHOP       BLACK_QUEEN         BLACK_KING      BLACK_BISHOP        BLACK_KNIGHT        BLACK_ROOK)
    (vector BLACK_PAWN       BLACK_PAWN       BLACK_PAWN         BLACK_PAWN          BLACK_PAWN      BLACK_PAWN          BLACK_PAWN          BLACK_PAWN)
@@ -65,47 +41,15 @@ A Matrix is a Vector of Vectors of Cells
    (vector WHITE_ROOK       WHITE_KNIGHT     WHITE_BISHOP       WHITE_QUEEN         WHITE_KING      WHITE_BISHOP        WHITE_KNIGHT        WHITE_ROOK)))
 
 
-(require 2htdp/image)
-
-(define WHITE_KING      (text "WHITE_KING" 10 "white"))
-(define WHITE_QUEEN     (text "WHITE_QUEEN" 10 "white"))
-(define WHITE_ROOK      (text "WHITE_ROOK" 10 "white"))
-(define WHITE_BISHOP    (text "WHITE_BISHOP" 10 "white"))
-(define WHITE_KNIGHT    (text "WHITE_KNIGHT" 10 "white"))
-(define WHITE_PAWN      (text "WHITE_PAWN" 10 "white"))
-
-; Definition of the black pieces
-(define BLACK_KING      (text "BLACK_KING" 10 "white"))
-(define BLACK_QUEEN     (text "BLACK_QUEEN" 10 "white"))
-(define BLACK_ROOK      (text "BLACK_ROOK" 10 "white"))
-(define BLACK_BISHOP    (text "BLACK_BISHOP" 10 "white"))
-(define BLACK_KNIGHT    (text "BLACK_KNIGHT" 10 "white"))
-(define BLACK_PAWN      (text "BLACK_PAWN" 10 "white"))
-
-(define EMPTY           (text "EMPTY" 10 "white"))
-(define SQUARE1 (square 100 "solid" "grey"))
-(define SQUARE2 (square 100 "solid" "black"))
-
-(define CHESSBOARD
-  (above (beside BLACK_ROOK       BLACK_KNIGHT     BLACK_BISHOP       BLACK_QUEEN         BLACK_KING      BLACK_BISHOP        BLACK_KNIGHT        BLACK_ROOK)
-   (beside BLACK_PAWN       BLACK_PAWN       BLACK_PAWN         BLACK_PAWN          BLACK_PAWN      BLACK_PAWN          BLACK_PAWN          BLACK_PAWN)
-   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (beside EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (beside WHITE_PAWN       WHITE_PAWN       WHITE_PAWN         WHITE_PAWN          WHITE_PAWN      WHITE_PAWN          WHITE_PAWN          WHITE_PAWN)
-   (beside WHITE_ROOK       WHITE_KNIGHT     WHITE_BISHOP       WHITE_QUEEN         WHITE_KING      WHITE_BISHOP        WHITE_KNIGHT        WHITE_ROOK)))
-
-
 (define EMPTY_CHESSBOARD
-  (above (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
-         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
-         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)
-         (beside SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2)
-         (beside SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1 SQUARE2 SQUARE1)))
+  (above (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
+         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
+         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
+         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
+         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
+         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
+         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
+         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)))
 
 (define (place_pieces pieces chessboard row_acc col_acc)
   (cond
@@ -115,132 +59,180 @@ A Matrix is a Vector of Vectors of Cells
 
 
 
+; New section with bitboards
+
+(define WK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WP #b0000000000000000000000000000000000000000000000000000000000000000)
+
+(define BK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BP #b0000000000000000000000000000000000000000000000000000000000000000)
+
+(define BITBOARDS
+  (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
+
+(define A (vector 1 2 3))
+
+(define EMTPY_CHESSBOARD
+  (vector
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")))
+
+(define CHESSBOARD
+  (vector
+   (vector "r" "n" "b" "q" "k" "b" "n" "r")
+   (vector "p" "p" "p" "p" "p" "p" "p" "p")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector "P" "P" "P" "P" "P" "P" "P" "P")
+   (vector "R" "N" "B" "Q" "K" "B" "N" "R")))
+
+(define TEST_CHESSBOARD
+  (vector
+   (vector " " " " " " " " "r" " " " " "p")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector "-" " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector "p" "n" " " " " "R" " " "p" "p")
+   (vector " " " " " " " " "p" " " " " " ")
+   (vector " " " " " " " " "p" " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")))
+
+
+(define (matrix_get matrix row col)
+  (vector-ref (vector-ref matrix row) col))
+
+(define (matrix_set matrix row col value)
+  (vector-set! (vector-ref matrix row) col value))
+
+(define (matrixToBitBoards CHESSBOARD BITBOARDS k_acc)
+  (cond
+    [(equal? 64 k_acc) BITBOARDS]
+    [(equal? "K" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 0 (+ (vector-ref BITBOARDS 0) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "Q" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 1 (+ (vector-ref BITBOARDS 1) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "R" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 2 (+ (vector-ref BITBOARDS 2) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "B" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 3 (+ (vector-ref BITBOARDS 3) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "N" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 4 (+ (vector-ref BITBOARDS 4) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "P" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 5 (+ (vector-ref BITBOARDS 5) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "k" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 6 (+ (vector-ref BITBOARDS 6) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "q" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 7 (+ (vector-ref BITBOARDS 7) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "r" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 8 (+ (vector-ref BITBOARDS 8) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "b" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 9 (+ (vector-ref BITBOARDS 9) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "n" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 10 (+ (vector-ref BITBOARDS 10) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? "p" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
+     (begin (vector-set! BITBOARDS 11 (+ (vector-ref BITBOARDS 11) (arithmetic-shift 1 (- 63 k_acc)))))
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [else
+     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]))
+
+(define (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS k_acc)
+  (cond
+    [(equal? 64 k_acc) EMTPY_CHESSBOARD]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 0) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "K"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 1) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "Q"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 2) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "R"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 3) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "B"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 4) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "N"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 5) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "P"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 6) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "k"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 7) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "q"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 8) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "r"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 9) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "b"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 10) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "n"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 11) (- k_acc 63))))
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "p"))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
+    [else
+     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) " "))
+     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]))
+
+(define (printBitBoards2 BITBOARDS k_acc)
+  (cond
+    [(equal? 12 k_acc) (void)]
+    [else
+     (begin (writeln (~r (vector-ref BITBOARDS k_acc) #:base 2 #:min-width 64 #:pad-string "0")))
+     (begin (printBitBoards2 BITBOARDS (add1 k_acc)))]))
+
+(define (printBitBoards BITBOARDS)
+  (printBitBoards2 BITBOARDS 0))
+
+
+
+
+
+(define (printBitBoard2 BITBOARD k_acc)
+  (cond
+    [(equal? 8 k_acc) (void)]
+    [else
+     (begin (writeln (~r (bitwise-and (arithmetic-shift BITBOARD (* -8 (- 7 k_acc))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0")))
+     (begin (printBitBoard2 BITBOARD (add1 k_acc)))]))
+
+(define (printBitBoard BITBOARD)
+  (printBitBoard2 BITBOARD 0))
+
+
+
+(matrixToBitBoards TEST_CHESSBOARD BITBOARDS 0)
+(bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS 0)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(define PAWN-MOVES (list "TODO: see how to make moves"))
-(define ROOK-MOVES (list "TODO: see how to make moves"))
-(define BISHOP-MOVES (list "TODO: see how to make moves"))
-(define KNIGHT-MOVES (list "TODO: see how to make moves"))
-(define KING-MOVES (list "TODO: see how to make moves"))
-(define QUEEN-MOVES (list "TODO: see how to make moves"))
-(define EMPTY-MOVES '())
-
-
-
-; cell
-; A cell is one of:
-; - 
-
-;; BOARD
-; A board is a vector of cells and a canvas
-;    - cells  -> vector of 64 cells which are on the board
-;    - canvas -> image result from the vector of cells
-(define-struct board [cells canvas])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; FUNCTIONS
-
-;; draw-board : board -> board
-; Takes a board as input and updates its canvas member based on its
-; current state. This should be called everytime a move is made (so
-; after the end of every turn)
-(define (draw-board board) #f)
-
-;; template
-; (define (draw-board board)
-;   (... board-cells ...
-;    ... board-canvas ... ))
-
-;;TODO: write tests for draw-board
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; make-move : board Number Move -> board
-; Takes a board as input along with the target cell (given by the
-; Number, which is a number between 1 and 64 indicating the target cell)
-; and a Move. When called, a function validate-move is called to
-; see if the move is legal
-(define (make-move board target mov) #f)
-
-;; template
-; (define (make-move board target mov)
-;    (... board-cells ... target ...
-;     ... mov ...))
-
-;;TODO: write tests for make-move
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; validate-move : board Number Move -> Boolean
-; Takes a board, a number signifying the target cell and a move. If
-; the move is legal it returns #t, if it's not it returns #f
-(define (validate-move board target mov) #f)
-
-;;TODO: write template and tests
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;TODO: a way to check for checks/checkmate
-(define CHECK-MATE(board ))
-
-;;PROVIDES
-(provide piece)
-(provide cell)
-(provide board)
-
-(provide draw-board)
-(provide make-move)
-(provide validate-move)

@@ -18,6 +18,61 @@
 ;(define (PAWN-MOVES bitmap lom))
 
 ; Mossa Ety
+(define (reverseBinary2 b k_acc total_sum)
+  (cond
+    [(equal? 64 k_acc) total_sum]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift b (- k_acc 63))))
+       (reverseBinary2 b (add1 k_acc) (+ total_sum (arithmetic-shift 1 k_acc)))]
+    [else (reverseBinary2 b (add1 k_acc) total_sum)]))
+
+(define (reverseBinary b)
+  (reverseBinary2 b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
+
+
+(define (bitBoardsXOR BITBOARDS k_acc)
+  (cond
+    [(equal? 11 k_acc) (vector-ref BITBOARDS k_acc)]
+    [else
+     (bitwise-xor (vector-ref BITBOARDS k_acc) (bitBoardsXOR BITBOARDS (add1 k_acc)))]))
+
+(define OCCUPIED
+  (bitBoardsXOR BITBOARDS 0))
+
+
+(define RANKMASKS
+  (vector
+   #b1111111100000000000000000000000000000000000000000000000000000000
+   #b0000000011111111000000000000000000000000000000000000000000000000
+   #b0000000000000000111111110000000000000000000000000000000000000000
+   #b0000000000000000000000001111111100000000000000000000000000000000
+   #b0000000000000000000000000000000011111111000000000000000000000000
+   #b0000000000000000000000000000000000000000111111110000000000000000
+   #b0000000000000000000000000000000000000000000000001111111100000000
+   #b0000000000000000000000000000000000000000000000000000000011111111))
+
+(define FILEMASKS
+  (vector
+   #b1000000010000000100000001000000010000000100000001000000010000000
+   #b0100000001000000010000000100000001000000010000000100000001000000
+   #b0010000000100000001000000010000000100000001000000010000000100000
+   #b0001000000010000000100000001000000010000000100000001000000010000
+   #b0000100000001000000010000000100000001000000010000000100000001000
+   #b0000010000000100000001000000010000000100000001000000010000000100
+   #b0000001000000010000000100000001000000010000000100000001000000010
+   #b0000000100000001000000010000000100000001000000010000000100000001))
+
+
+(define (horizontalVerticalMoves matrixPosition)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 63 matrixPosition)))
+    (define horizontalMoves
+      (bitwise-xor (- OCCUPIED (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary OCCUPIED) (* 2 (reverseBinary binaryPosition))))))
+    (define verticalMoves
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo matrixPosition 8))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo matrixPosition 8)))) (* 2 (reverseBinary binaryPosition)))))))
+    (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ matrixPosition 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo matrixPosition 8))))))
 
 
 
