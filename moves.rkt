@@ -52,16 +52,23 @@
 
 ; Mossa Leo
 ;;ROOK
+
+;; CONSTANTS
+;; rook-column / rook-line
+; Are used for the rook-vertical and rook-horizontal functions
+(define rook-column #b0000000100000001000000010000000100000001000000010000000100000001)
+(define rook-line   #b11111111)
+
 ;; rook-horizontal : Number (Number) -> Number
 ; Returns all horizontal moves for the rook (doesnt account for other pieces)
 (define (rook-horizontal bit-board row)
-    (local [(define bitRow (arithmetic-shift #b11111111 (* 8 row)))]
+    (local [(define bitRow (arithmetic-shift rook-line (* 8 row)))]
         (bitwise-xor bit-board bitRow)))
 
 ;; rook-vertical : Number (Number) -> Number
 ; Returns all vertical moves for the rook (doesnt account for other pieces)
 (define (rook-vertical bit-board col)
-    (local [(define bitCol (arithmetic-shift #b0000000100000001000000010000000100000001000000010000000100000001 col))]
+    (local [(define bitCol (arithmetic-shift rook-column col))]
         (bitwise-xor bit-board bitCol)))
 
 ;; rook-basic : Number (Number Number) -> Number
@@ -72,10 +79,6 @@
 ; other pieces / possible captures
 (define (rook-basic bit-board row col)
     (bitwise-xor (rook-horizontal bit-board row) (rook-vertical bit-board col) ))
-
-;test
-(define rook-test-bitboard #b0000000000000000000000000000000000010000000000000000000000000000)
-(define rook-basic-test (rook-basic rook-test-bitboard 3 4))
 
 
 ;;; (define (ROOK-MOVES)
