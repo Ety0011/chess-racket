@@ -418,3 +418,16 @@
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
       (numberOfTrailingZeros bb (add1 no-zeroes))))
+
+
+
+;;; TEST ;;;
+(define (isKingChecked kingBitBoard enemyAttacks)
+  (if (not (zero? (bitwise-and kingBitBoard enemyAttacks))) #t
+      #f))
+
+
+(define enemyRook #b0000000000000000000000010000000000000000000000000000000000000000)
+(define rookAttacks (horizontalVerticalMoves 23))
+(define testKing  #b0000000000000000000010000000000000000000000000000000000000000000)
+(isKingChecked testKing rookAttacks)
