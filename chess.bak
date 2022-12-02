@@ -257,16 +257,12 @@
       ;Capture Left
       (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) 9))
 
-
-    ;Pietro non puoi mettere due body diversi nella stessa funzione. Ho commentato il secondo body
-    ; perche altrimenti mi da errore
-    
     ;Move either 2 or 1 forward 
-    ;(cond
+    (cond
       ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
+      [(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
       ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
+      [(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
     )
   )
 )
