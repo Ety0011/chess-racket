@@ -6,6 +6,10 @@
 (require 2htdp/image)
 
 
+
+
+
+
 ;; Costants
 (define WK_IMG (bitmap "img/WHITE_KING.png"))
 (define WQ_IMG (bitmap "img/WHITE_QUEEN.png"))
@@ -58,8 +62,8 @@
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
    (vector "p" "p" "p" "p" "p" "p" "p" "p")
    (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " "p" " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " "Q" " " "K" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
    (vector "P" "P" "P" "P" "P" "P" "P" "P")
    (vector "R" "N" "B" "Q" "K" "B" "N" "R")))
@@ -75,46 +79,46 @@
    (vector " " " " " " " " "p" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
-(define (chessboardGet matrix row col)
+(define (matrix_get matrix row col)
   (vector-ref (vector-ref matrix row) col))
 
-(define (chessboardSet matrix row col value)
+(define (matrix_set matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
-(define (draw chessboard ChessboardIndex)
+(define (draw chessboard k_acc)
   (local
-    ((define (getPiece chessboard ChessboardIndex)
-       (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
-     (define (drawPiece pieceIMG ChessboardIndex)
-       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (draw chessboard (add1 ChessboardIndex))))) 
-    (if (equal? 64 ChessboardIndex) BACKGROUND
+    ((define (getPiece chessboard matrixPosition)
+       (matrix_get chessboard (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))
+     (define (drawPiece pieceIMG matrixPosition)
+       (place-image pieceIMG (+ 50 (* 100 (modulo matrixPosition 8))) (+ 50 (* 100 (floor (/ matrixPosition 8)))) (draw chessboard (add1 matrixPosition))))) 
+    (if (equal? 64 k_acc) BACKGROUND
         (cond
-          [(equal? "K" (getPiece chessboard ChessboardIndex))
-           (drawPiece WK_IMG ChessboardIndex)]
-          [(equal? "Q" (getPiece chessboard ChessboardIndex))
-           (drawPiece WQ_IMG ChessboardIndex)]
-          [(equal? "R" (getPiece chessboard ChessboardIndex))
-           (drawPiece WR_IMG ChessboardIndex)]
-          [(equal? "B" (getPiece chessboard ChessboardIndex))
-           (drawPiece WB_IMG ChessboardIndex)]
-          [(equal? "N" (getPiece chessboard ChessboardIndex))
-           (drawPiece WN_IMG ChessboardIndex)]
-          [(equal? "P" (getPiece chessboard ChessboardIndex))
-           (drawPiece WP_IMG ChessboardIndex)]
-          [(equal? "k" (getPiece chessboard ChessboardIndex))
-           (drawPiece BK_IMG ChessboardIndex)]
-          [(equal? "r" (getPiece chessboard ChessboardIndex))
-           (drawPiece BR_IMG ChessboardIndex)]
-          [(equal? "q" (getPiece chessboard ChessboardIndex))
-           (drawPiece BQ_IMG ChessboardIndex)]
-          [(equal? "b" (getPiece chessboard ChessboardIndex))
-           (drawPiece BB_IMG ChessboardIndex)]
-          [(equal? "n" (getPiece chessboard ChessboardIndex))
-           (drawPiece BN_IMG ChessboardIndex)]
-          [(equal? "p" (getPiece chessboard ChessboardIndex))
-           (drawPiece BP_IMG ChessboardIndex)]
-          [(equal? " " (getPiece chessboard ChessboardIndex))
-           (draw chessboard (add1 ChessboardIndex))]))))
+          [(equal? "K" (getPiece chessboard k_acc))
+           (drawPiece WK_IMG k_acc)]
+          [(equal? "Q" (getPiece chessboard k_acc))
+           (drawPiece WQ_IMG k_acc)]
+          [(equal? "R" (getPiece chessboard k_acc))
+           (drawPiece WR_IMG k_acc)]
+          [(equal? "B" (getPiece chessboard k_acc))
+           (drawPiece WB_IMG k_acc)]
+          [(equal? "N" (getPiece chessboard k_acc))
+           (drawPiece WN_IMG k_acc)]
+          [(equal? "P" (getPiece chessboard k_acc))
+           (drawPiece WP_IMG k_acc)]
+          [(equal? "k" (getPiece chessboard k_acc))
+           (drawPiece BK_IMG k_acc)]
+          [(equal? "r" (getPiece chessboard k_acc))
+           (drawPiece BR_IMG k_acc)]
+          [(equal? "q" (getPiece chessboard k_acc))
+           (drawPiece BQ_IMG k_acc)]
+          [(equal? "b" (getPiece chessboard k_acc))
+           (drawPiece BB_IMG k_acc)]
+          [(equal? "n" (getPiece chessboard k_acc))
+           (drawPiece BN_IMG k_acc)]
+          [(equal? "p" (getPiece chessboard k_acc))
+           (drawPiece BP_IMG k_acc)]
+          [(equal? " " (getPiece chessboard k_acc))
+           (draw chessboard (add1 k_acc))]))))
 
 (draw STANDARD_CHESSBOARD 0)
 
@@ -134,103 +138,103 @@
 (define BITBOARDS
   (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
 
-(define (chessboardToBitboards chessboard ChessboardIndex)
+(define (matrixToBitBoards chessboard k_acc)
   (local
-    ((define (getPiece chessboard ChessboardIndex)
-       (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
-     (define (writeBitBoard bitboard ChessboardIndex)
-       (begin (vector-set! BITBOARDS bitboard (+ (vector-ref BITBOARDS bitboard) (arithmetic-shift 1 (- 63 ChessboardIndex)))))
-       (begin (chessboardToBitboards chessboard (add1 ChessboardIndex)))))
-    (if (equal? 64 ChessboardIndex) BITBOARDS
+    ((define (getPiece chessboard matrixPosition)
+       (matrix_get chessboard (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))
+     (define (writeBitBoard bitboard matrixPosition)
+       (begin (vector-set! BITBOARDS bitboard (+ (vector-ref BITBOARDS bitboard) (arithmetic-shift 1 (- 63 matrixPosition)))))
+       (begin (matrixToBitBoards chessboard (add1 matrixPosition)))))
+    (if (equal? 64 k_acc) BITBOARDS
         (cond
-          [(equal? "K" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 0 ChessboardIndex)]
-          [(equal? "Q" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 1 ChessboardIndex)]
-          [(equal? "R" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 2 ChessboardIndex)]
-          [(equal? "B" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 3 ChessboardIndex)]
-          [(equal? "N" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 4 ChessboardIndex)]
-          [(equal? "P" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 5 ChessboardIndex)]
-          [(equal? "k" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 6 ChessboardIndex)]
-          [(equal? "q" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 7 ChessboardIndex)]
-          [(equal? "r" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 8 ChessboardIndex)]
-          [(equal? "b" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 9 ChessboardIndex)]
-          [(equal? "n" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 10 ChessboardIndex)]
-          [(equal? "p" (getPiece chessboard ChessboardIndex))
-           (writeBitBoard 11 ChessboardIndex)]
-          [(equal? " " (getPiece chessboard ChessboardIndex))
-           (chessboardToBitboards chessboard (add1 ChessboardIndex))]))))
+          [(equal? "K" (getPiece chessboard k_acc))
+           (writeBitBoard 0 k_acc)]
+          [(equal? "Q" (getPiece chessboard k_acc))
+           (writeBitBoard 1 k_acc)]
+          [(equal? "R" (getPiece chessboard k_acc))
+           (writeBitBoard 2 k_acc)]
+          [(equal? "B" (getPiece chessboard k_acc))
+           (writeBitBoard 3 k_acc)]
+          [(equal? "N" (getPiece chessboard k_acc))
+           (writeBitBoard 4 k_acc)]
+          [(equal? "P" (getPiece chessboard k_acc))
+           (writeBitBoard 5 k_acc)]
+          [(equal? "k" (getPiece chessboard k_acc))
+           (writeBitBoard 6 k_acc)]
+          [(equal? "q" (getPiece chessboard k_acc))
+           (writeBitBoard 7 k_acc)]
+          [(equal? "r" (getPiece chessboard k_acc))
+           (writeBitBoard 8 k_acc)]
+          [(equal? "b" (getPiece chessboard k_acc))
+           (writeBitBoard 9 k_acc)]
+          [(equal? "n" (getPiece chessboard k_acc))
+           (writeBitBoard 10 k_acc)]
+          [(equal? "p" (getPiece chessboard k_acc))
+           (writeBitBoard 11 k_acc)]
+          [(equal? " " (getPiece chessboard k_acc))
+           (matrixToBitBoards chessboard (add1 k_acc))]))))
 
-(define (bitboardsToChessboard chessboard ChessboardIndex)
+(define (bitBoardsToMatrix chessboard k_acc)
   (local
-    ((define (getBit bitboard ChessboardIndex)
-       (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS bitboard) (- ChessboardIndex 63))))
-     (define (writeChessBoard chessboard ChessboardIndex value)
-       (begin (chessboardSet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8) value))
-       (begin (bitboardsToChessboard chessboard (add1 ChessboardIndex)))))
-    (if (equal? 64 ChessboardIndex) chessboard
+    ((define (getBit bitboard matrixPosition)
+       (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS bitboard) (- matrixPosition 63))))
+     (define (writeChessBoard chessboard matrixPosition value)
+       (begin (matrix_set chessboard (floor (/ matrixPosition 8)) (modulo matrixPosition 8) value))
+       (begin (bitBoardsToMatrix chessboard (add1 k_acc)))))
+    (if (equal? 64 k_acc) chessboard
         (cond
-          [(equal? 1 (getBit 0 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "K")]
-          [(equal? 1 (getBit 1 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "Q")]
-          [(equal? 1 (getBit 2 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "R")]
-          [(equal? 1 (getBit 3 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "B")]
-          [(equal? 1 (getBit 4 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "N")]
-          [(equal? 1 (getBit 5 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "P")]
-          [(equal? 1 (getBit 6 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "k")]
-          [(equal? 1 (getBit 7 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "q")]
-          [(equal? 1 (getBit 8 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "r")]
-          [(equal? 1 (getBit 9 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "b")]
-          [(equal? 1 (getBit 10 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "n")]
-          [(equal? 1 (getBit 11 ChessboardIndex))
-           (writeChessBoard chessboard ChessboardIndex "p")]
+          [(equal? 1 (getBit 0 k_acc))
+           (writeChessBoard chessboard k_acc "K")]
+          [(equal? 1 (getBit 1 k_acc))
+           (writeChessBoard chessboard k_acc "Q")]
+          [(equal? 1 (getBit 2 k_acc))
+           (writeChessBoard chessboard k_acc "R")]
+          [(equal? 1 (getBit 3 k_acc))
+           (writeChessBoard chessboard k_acc "B")]
+          [(equal? 1 (getBit 4 k_acc))
+           (writeChessBoard chessboard k_acc "N")]
+          [(equal? 1 (getBit 5 k_acc))
+           (writeChessBoard chessboard k_acc "P")]
+          [(equal? 1 (getBit 6 k_acc))
+           (writeChessBoard chessboard k_acc "k")]
+          [(equal? 1 (getBit 7 k_acc))
+           (writeChessBoard chessboard k_acc "q")]
+          [(equal? 1 (getBit 8 k_acc))
+           (writeChessBoard chessboard k_acc "r")]
+          [(equal? 1 (getBit 9 k_acc))
+           (writeChessBoard chessboard k_acc "b")]
+          [(equal? 1 (getBit 10 k_acc))
+           (writeChessBoard chessboard k_acc "n")]
+          [(equal? 1 (getBit 11 k_acc))
+           (writeChessBoard chessboard k_acc "p")]
           [else
-           (writeChessBoard chessboard ChessboardIndex " ")]))))
+           (writeChessBoard chessboard k_acc " ")]))))
 
-(chessboardToBitboards STANDARD_CHESSBOARD 0)
-(bitboardsToChessboard STANDARD_CHESSBOARD 0)
+(matrixToBitBoards STANDARD_CHESSBOARD 0)
+(bitBoardsToMatrix STANDARD_CHESSBOARD 0)
 
 
-(define (printBitBoard2 BITBOARD ChessboardIndex)
+(define (printBitBoard2 BITBOARD k_acc)
   (cond
-    [(equal? 8 ChessboardIndex) (void)]
+    [(equal? 8 k_acc) (void)]
     [else
-     (begin (writeln (~r (bitwise-and (arithmetic-shift BITBOARD (* -8 (- 7 ChessboardIndex))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0")))
-     (begin (printBitBoard2 BITBOARD (add1 ChessboardIndex)))]))
+     (begin (writeln (~r (bitwise-and (arithmetic-shift BITBOARD (* -8 (- 7 k_acc))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0")))
+     (begin (printBitBoard2 BITBOARD (add1 k_acc)))]))
 
 (define (printBitBoard BITBOARD)
   (printBitBoard2 BITBOARD 0))
 
 
-(define (printBitboards2 BITBOARDS ChessboardIndex)
+(define (printBitBoards2 BITBOARDS k_acc)
   (cond
-    [(equal? (vector-length BITBOARDS) ChessboardIndex) (void)]
+    [(equal? (vector-length BITBOARDS) k_acc) (void)]
     [else
      (begin (writeln "        "))
-     (begin  (printBitBoard (vector-ref BITBOARDS ChessboardIndex)))
-     (begin (printBitboards2 BITBOARDS (add1 ChessboardIndex)))]))
+     (begin  (printBitBoard (vector-ref BITBOARDS k_acc)))
+     (begin (printBitBoards2 BITBOARDS (add1 k_acc)))]))
 
-(define (printBitboards BITBOARDS)
-  (printBitboards2 BITBOARDS 0))
+(define (printBitBoards BITBOARDS)
+  (printBitBoards2 BITBOARDS 0))
 
 ;=============================================================================================
 
@@ -243,74 +247,68 @@
 ; Mossa Pietro
 ;;Pawn
 
-(define (PawnMoves ChessboardIndex)
+(define (PawnMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
+      (arithmetic-shift 1 (- 63 matrixPosition))))
     (bitwise-ior
       ;Capture Right
       (arithmetic-shift (bitwise-and binaryPosition FILE_A RANKMASKS) 7)
       ;Capture Left
       (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) 9))
 
-
-    ;Pietro non puoi mettere due body diversi nella stessa funzione. Ho commentato il secondo body
-    ; perche altrimenti mi da errore
-    
     ;Move either 2 or 1 forward 
-    ;(cond
+    (cond
       ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
+      [(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
       ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
+      [(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
     )
   )
-;)
+)
       
      
-(define (BPawnMoves ChessboardIndex)
+(define (BPawnMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
+      (arithmetic-shift 1 (- 63 matrixPosition))))
     (bitwise-ior
       ;Capture left
       (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) -7)
       ;Capture right
       (arithmetic-shift (bitwise-and binaryPosition FILE_A RANKMASKS) -9))
-
-    ; QUESTA FUNZIONE E ROTTA, NON PUOI SCRIVERE UN SECONDO BODY... ESCE ERRORE
     
     ;Move either 2 or 1 forward 
-    ;(cond
+    (cond
       ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -8))]
+      [(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -8))]
       ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -16)]
+      [(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -16)]
     )
   )
-;)
+)
      
 
 ; Mossa Ety
-(define (reverseBinary2 b ChessboardIndex total_sum)
+(define (reverseBinary2 b k_acc total_sum)
   (cond
-    [(equal? 64 ChessboardIndex) total_sum]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift b (- ChessboardIndex 63))))
-       (reverseBinary2 b (add1 ChessboardIndex) (+ total_sum (arithmetic-shift 1 ChessboardIndex)))]
-    [else (reverseBinary2 b (add1 ChessboardIndex) total_sum)]))
+    [(equal? 64 k_acc) total_sum]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift b (- k_acc 63))))
+       (reverseBinary2 b (add1 k_acc) (+ total_sum (arithmetic-shift 1 k_acc)))]
+    [else (reverseBinary2 b (add1 k_acc) total_sum)]))
 
 (define (reverseBinary b)
   (reverseBinary2 b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
 
 
-(define (bitboardsXOR BITBOARDS ChessboardIndex)
+(define (bitBoardsXOR BITBOARDS k_acc)
   (cond
-    [(equal? 11 ChessboardIndex) (vector-ref BITBOARDS ChessboardIndex)]
+    [(equal? 11 k_acc) (vector-ref BITBOARDS k_acc)]
     [else
-     (bitwise-xor (vector-ref BITBOARDS ChessboardIndex) (bitboardsXOR BITBOARDS (add1 ChessboardIndex)))]))
+     (bitwise-xor (vector-ref BITBOARDS k_acc) (bitBoardsXOR BITBOARDS (add1 k_acc)))]))
 
 (define OCCUPIED
-  (bitboardsXOR BITBOARDS 0))
+  (bitBoardsXOR BITBOARDS 0))
 
 
 (define RANKMASKS
@@ -372,30 +370,30 @@
    #b0000000000000000000000000000000000000000000000000000000010000000))
 
 
-(define (horizontalVerticalMoves ChessboardIndex)
+(define (horizontalVerticalMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex)))
+      (arithmetic-shift 1 (- 63 matrixPosition)))
     (define horizontalMoves
       (bitwise-xor (- OCCUPIED (* 2 binaryPosition))
                    (reverseBinary (- (reverseBinary OCCUPIED) (* 2 (reverseBinary binaryPosition))))))
     (define verticalMoves
-      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo ChessboardIndex 8))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo ChessboardIndex 8)))) (* 2 (reverseBinary binaryPosition)))))))
-    (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ ChessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo ChessboardIndex 8))))))
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo matrixPosition 8))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo matrixPosition 8)))) (* 2 (reverseBinary binaryPosition)))))))
+    (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ matrixPosition 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo matrixPosition 8))))))
 
 
-(define (DiagonalAntiDiagonalMoves ChessboardIndex)
+(define (DiagonalAntiDiagonalMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex)))
+      (arithmetic-shift 1 (- 63 matrixPosition)))
     (define DiagonalMoves
-      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8))))) (* 2 (reverseBinary binaryPosition))))))
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ matrixPosition 8)) (modulo matrixPosition 8))))) (* 2 (reverseBinary binaryPosition))))))
     (define AntiDiagonalMoves
-      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition)))))))
-    (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))))))
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ matrixPosition 8)) (- 7 (modulo matrixPosition 8))))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ matrixPosition 8)) (- 7 (modulo matrixPosition 8)))))) (* 2 (reverseBinary binaryPosition)))))))
+    (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ matrixPosition 8)) (- 7 (modulo matrixPosition 8))))))))
 
 
 
@@ -405,10 +403,10 @@
 (define FILE_GH #b1111110011111100111111001111110011111100111111001111110011111100)
 (define FILE_H  #b1111111011111110111111101111111011111110111111101111111011111110)
 
-(define (knightMoves ChessboardIndex)
+(define (knightMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
+      (arithmetic-shift 1 (- 63 matrixPosition))))
     (bitwise-ior
      (arithmetic-shift (bitwise-and binaryPosition FILE_AB) 10)
      (arithmetic-shift (bitwise-and binaryPosition FILE_A) 17)
@@ -419,10 +417,10 @@
      (arithmetic-shift (bitwise-and binaryPosition FILE_A) -15)
      (arithmetic-shift (bitwise-and binaryPosition FILE_AB) -6))))
 
-(define (kingMoves ChessboardIndex)
+(define (kingMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
+      (arithmetic-shift 1 (- 63 matrixPosition))))
     (bitwise-ior
      (arithmetic-shift (bitwise-and binaryPosition FILE_A) 1)
      (arithmetic-shift (bitwise-and binaryPosition FILE_A) 9)
