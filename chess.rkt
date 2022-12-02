@@ -29,17 +29,17 @@
 
 ;; Costants
 (define WK_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WK.png")))
-(define WQ_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/WQ.png")))
-(define WR_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/WR.png")))
-(define WB_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/WB.png")))
-(define WN_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/WN.png")))
-(define WP_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/WP.png")))
-(define BK_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/BK.png")))
-(define BQ_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/BQ.png")))
-(define BR_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/BR.png")))
-(define BB_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/BB.png")))
-(define BN_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/BN.png")))
-(define BP_IMG (scale (/ SQUARE_SIDE 162)(bitmap "img/BP.png")))
+(define WQ_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WQ.png")))
+(define WR_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WR.png")))
+(define WB_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WB.png")))
+(define WN_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WN.png")))
+(define WP_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WP.png")))
+(define BK_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BK.png")))
+(define BQ_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BQ.png")))
+(define BR_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BR.png")))
+(define BB_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BB.png")))
+(define BN_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BN.png")))
+(define BP_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BP.png")))
 
 (define EMTPY_CHESSBOARD
   (vector
