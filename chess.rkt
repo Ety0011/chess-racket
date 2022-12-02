@@ -57,8 +57,8 @@
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
    (vector "p" "p" "p" "p" "p" "p" "p" "p")
    (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " "p" " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " "Q" " " "K" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
    (vector "P" "P" "P" "P" "P" "P" "P" "P")
    (vector "R" "N" "B" "Q" "K" "B" "N" "R")))
@@ -209,27 +209,27 @@
 (bitboardsToChessboard STANDARD_CHESSBOARD 0)
 
 
-(define (printBitBoard2 BITBOARD ChessboardIndex)
+(define (printBitboard2 bitboard ChessboardIndex)
   (cond
     [(equal? 8 ChessboardIndex) (void)]
     [else
-     (begin (writeln (~r (bitwise-and (arithmetic-shift BITBOARD (* -8 (- 7 ChessboardIndex))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0")))
-     (begin (printBitBoard2 BITBOARD (add1 ChessboardIndex)))]))
+     (begin (writeln (~r (bitwise-and (arithmetic-shift bitboard (* -8 (- 7 ChessboardIndex))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0")))
+     (begin (printBitboard2 bitboard (add1 ChessboardIndex)))]))
 
-(define (printBitBoard BITBOARD)
-  (printBitBoard2 BITBOARD 0))
+(define (printBitboard bitboard)
+  (printBitboard2 bitboard 0))
 
 
-(define (printBitboards2 BITBOARDS ChessboardIndex)
+(define (printBitboards2 bitboards ChessboardIndex)
   (cond
-    [(equal? (vector-length BITBOARDS) ChessboardIndex) (void)]
+    [(equal? (vector-length bitboards) ChessboardIndex) (void)]
     [else
      (begin (writeln "        "))
-     (begin  (printBitBoard (vector-ref BITBOARDS ChessboardIndex)))
-     (begin (printBitboards2 BITBOARDS (add1 ChessboardIndex)))]))
+     (begin  (printBitboard (vector-ref bitboards ChessboardIndex)))
+     (begin (printBitboards2 bitboards (add1 ChessboardIndex)))]))
 
-(define (printBitboards BITBOARDS)
-  (printBitboards2 BITBOARDS 0))
+(define (printBitboards bitboards)
+  (printBitboards2 bitboards 0))
 
 ;=============================================================================================
 
@@ -248,9 +248,9 @@
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
       ;Capture Right
-      (arithmetic-shift (bitwise-and binaryPosition FILE_A RANKMASKS) 7)
+      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A RANKMASKS) 7)
       ;Capture Left
-      (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) 9))
+      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H RANKMASKS) 9))
 
 
     ;Pietro non puoi mettere due body diversi nella stessa funzione. Ho commentato il secondo body
@@ -273,9 +273,9 @@
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
       ;Capture left
-      (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) -7)
+      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H RANKMASKS) -7)
       ;Capture right
-      (arithmetic-shift (bitwise-and binaryPosition FILE_A RANKMASKS) -9))
+      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A RANKMASKS) -9))
 
     ; QUESTA FUNZIONE E ROTTA, NON PUOI SCRIVERE UN SECONDO BODY... ESCE ERRORE
     
@@ -399,39 +399,47 @@
 
 
 
-(define FILE_A  #b0111111101111111011111110111111101111111011111110111111101111111)
-(define FILE_AB #b0011111100111111001111110011111100111111001111110011111100111111)
-(define FILE_GH #b1111110011111100111111001111110011111100111111001111110011111100)
-(define FILE_H  #b1111111011111110111111101111111011111110111111101111111011111110)
+(define NOT_FILE_A  #b0111111101111111011111110111111101111111011111110111111101111111)
+(define NOT_FILE_AB #b0011111100111111001111110011111100111111001111110011111100111111)
+(define NOT_FILE_GH #b1111110011111100111111001111110011111100111111001111110011111100)
+(define NOT_FILE_H  #b1111111011111110111111101111111011111110111111101111111011111110)
 
 (define (knightMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
-     (arithmetic-shift (bitwise-and binaryPosition FILE_AB) 10)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) 17)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_H) 15)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_GH) 6)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_GH) -10)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_H) -17)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) -15)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_AB) -6))))
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_AB) 10)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) 17)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) 15)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_GH) 6)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_GH) -10)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) -17)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -15)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_AB) -6))))
 
 (define (kingMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) 1)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) 9)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) 1)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) 9)
      (arithmetic-shift              binaryPosition         8)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_H) 7)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_H) -1)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_H) -9)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) 7)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) -1)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) -9)
      (arithmetic-shift              binaryPosition         -8)
-     (arithmetic-shift (bitwise-and binaryPosition FILE_A) -7))))
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -7))))
 
+(define (pawnMoves ChessboardIndex)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 63 ChessboardIndex))))
+    (bitwise-ior
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) 9)
+     (arithmetic-shift              binaryPosition         8)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) 7))))
 
 
 
