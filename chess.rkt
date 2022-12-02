@@ -5,80 +5,35 @@
 (require racket/format)
 (require 2htdp/image)
 
-(define WHITE_KING      (bitmap "img/WHITE_KING.png"))
-(define WHITE_QUEEN     (bitmap "img/WHITE_QUEEN.png"))
-(define WHITE_ROOK      (bitmap "img/WHITE_ROOK.png"))
-(define WHITE_BISHOP    (bitmap "img/WHITE_BISHOP.png"))
-(define WHITE_KNIGHT    (bitmap "img/WHITE_KNIGHT.png"))
-(define WHITE_PAWN      (bitmap "img/WHITE_PAWN.png"))
+(define WK_IMG (bitmap "img/WHITE_KING.png"))
+(define WQ_IMG (bitmap "img/WHITE_QUEEN.png"))
+(define WR_IMG (bitmap "img/WHITE_ROOK.png"))
+(define WB_IMG (bitmap "img/WHITE_BISHOP.png"))
+(define WN_IMG (bitmap "img/WHITE_KNIGHT.png"))
+(define WP_IMG (bitmap "img/WHITE_PAWN.png"))
+(define BK_IMG (bitmap "img/BLACK_KING.png"))
+(define BQ_IMG (bitmap "img/BLACK_QUEEN.png"))
+(define BR_IMG (bitmap "img/BLACK_ROOK.png"))
+(define BB_IMG (bitmap "img/BLACK_BISHOP.png"))
+(define BN_IMG (bitmap "img/BLACK_KNIGHT.png"))
+(define BP_IMG (bitmap "img/BLACK_PAWN.png"))
 
-; Definition of the black pieces
-(define BLACK_KING      (bitmap "img/BLACK_KING.png"))
-(define BLACK_QUEEN     (bitmap "img/BLACK_QUEEN.png"))
-(define BLACK_ROOK      (bitmap "img/BLACK_ROOK.png"))
-(define BLACK_BISHOP    (bitmap "img/BLACK_BISHOP.png"))
-(define BLACK_KNIGHT    (bitmap "img/BLACK_KNIGHT.png"))
-(define BLACK_PAWN      (bitmap "img/BLACK_PAWN.png"))
-
-(define EMPTY           (text "EMPTY" 10 "white"))
-
-(define dark_wood (make-color 191 108 58))
-(define light_wood (make-color 238 202 160))
+(define DARK_WOOD (make-color 191 108 58))
+(define LIGHT_WOOD (make-color 238 202 160))
 
 (define SQUARE_SIDE 100)
-(define ODD_SQUARE (square SQUARE_SIDE "solid" light_wood))
-(define EVEN_SQUARE (square SQUARE_SIDE "solid" dark_wood))
+(define LIGHT_SQUARE (square SQUARE_SIDE "solid" LIGHT_WOOD))
+(define DARK_SQUARE (square SQUARE_SIDE "solid" DARK_WOOD))
 
-(define CHESSBOARD2
-  (vector
-   (vector BLACK_ROOK       BLACK_KNIGHT     BLACK_BISHOP       BLACK_QUEEN         BLACK_KING      BLACK_BISHOP        BLACK_KNIGHT        BLACK_ROOK)
-   (vector BLACK_PAWN       BLACK_PAWN       BLACK_PAWN         BLACK_PAWN          BLACK_PAWN      BLACK_PAWN          BLACK_PAWN          BLACK_PAWN)
-   (vector EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (vector EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (vector EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (vector EMPTY            EMPTY            EMPTY              EMPTY               EMPTY           EMPTY               EMPTY               EMPTY)
-   (vector WHITE_PAWN       WHITE_PAWN       WHITE_PAWN         WHITE_PAWN          WHITE_PAWN      WHITE_PAWN          WHITE_PAWN          WHITE_PAWN)
-   (vector WHITE_ROOK       WHITE_KNIGHT     WHITE_BISHOP       WHITE_QUEEN         WHITE_KING      WHITE_BISHOP        WHITE_KNIGHT        WHITE_ROOK)))
-
-
-(define EMPTY_CHESSBOARD
-  (above (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
-         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
-         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)
-         (beside ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE)
-         (beside EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE EVEN_SQUARE ODD_SQUARE)))
-
-(define (place_pieces pieces chessboard row_acc col_acc)
-  (cond
-    [(> row_acc 7) chessboard]
-    [(> col_acc 7) (place_pieces pieces chessboard (add1 row_acc) 0)]
-    [else (place-image (vector-ref (vector-ref pieces row_acc) col_acc) (+ 50 (* 100 col_acc)) (+ 50 (* 100 row_acc)) (place_pieces pieces chessboard row_acc (add1 col_acc)))]))
-
-
-
-; New section with bitboards
-
-(define WK #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WR #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WB #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WN #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WP #b0000000000000000000000000000000000000000000000000000000000000000)
-
-(define BK #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BQ #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BR #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BB #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BN #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BP #b0000000000000000000000000000000000000000000000000000000000000000)
-
-(define BITBOARDS
-  (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
-
-(define A (vector 1 2 3))
+(define BACKGROUND
+  (above (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
+         (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)
+         (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
+         (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)
+         (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
+         (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)
+         (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
+         (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)))
 
 (define EMTPY_CHESSBOARD
   (vector
@@ -91,13 +46,13 @@
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
-(define CHESSBOARD
+(define STANDARD_CHESSBOARD
   (vector
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
    (vector "p" "p" "p" "p" "p" "p" "p" "p")
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " "Q" " " "K" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
    (vector "P" "P" "P" "P" "P" "P" "P" "P")
    (vector "R" "N" "B" "Q" "K" "B" "N" "R")))
@@ -113,12 +68,61 @@
    (vector " " " " " " " " "p" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
-
 (define (matrix_get matrix row col)
   (vector-ref (vector-ref matrix row) col))
 
 (define (matrix_set matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
+
+(define (draw chessboard background k_acc)
+  (cond
+    [(equal? 64 k_acc) background]
+    [else
+     (cond
+       [(equal? "K" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image WK_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "Q" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image WQ_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "R" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image WR_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "B" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image WB_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "N" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image WN_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "P" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image WP_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "k" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image BK_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "q" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image BQ_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "r" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image BR_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "b" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image BB_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "n" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image BN_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? "p" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (place-image BP_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
+       [(equal? " " (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
+        (draw chessboard background (add1 k_acc))])]))
+
+(draw STANDARD_CHESSBOARD BACKGROUND 0)
+
+(define WK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WP #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BP #b0000000000000000000000000000000000000000000000000000000000000000)
+
+(define BITBOARDS
+  (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
 
 (define (matrixToBitBoards CHESSBOARD BITBOARDS k_acc)
   (cond
