@@ -74,39 +74,42 @@
 (define (matrix_set matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
-(define (draw chessboard background k_acc)
-  (cond
-    [(equal? 64 k_acc) background]
-    [else
-     (cond
-       [(equal? "K" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image WK_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "Q" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image WQ_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "R" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image WR_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "B" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image WB_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "N" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image WN_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "P" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image WP_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "k" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image BK_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "q" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image BQ_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "r" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image BR_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "b" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image BB_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "n" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image BN_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? "p" (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (place-image BP_IMG (+ 50 (* 100 (modulo k_acc 8))) (+ 50 (* 100 (floor (/ k_acc 8)))) (draw chessboard background (add1 k_acc)))]
-       [(equal? " " (matrix_get chessboard (floor (/ k_acc 8)) (modulo k_acc 8)))
-        (draw chessboard background (add1 k_acc))])]))
+(define (draw chessboard k_acc)
+  (local
+    ((define (getPiece chessboard matrixPosition)
+       (matrix_get chessboard (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))
+     (define (drawPiece pieceIMG matrixPosition)
+       (place-image pieceIMG (+ 50 (* 100 (modulo matrixPosition 8))) (+ 50 (* 100 (floor (/ matrixPosition 8)))) (draw chessboard (add1 matrixPosition))))) 
+    (if (equal? 64 k_acc) BACKGROUND
+        (cond
+          [(equal? "K" (getPiece chessboard k_acc))
+           (drawPiece WK_IMG k_acc)]
+          [(equal? "Q" (getPiece chessboard k_acc))
+           (drawPiece WQ_IMG k_acc)]
+          [(equal? "R" (getPiece chessboard k_acc))
+           (drawPiece WR_IMG k_acc)]
+          [(equal? "B" (getPiece chessboard k_acc))
+           (drawPiece WB_IMG k_acc)]
+          [(equal? "N" (getPiece chessboard k_acc))
+           (drawPiece WN_IMG k_acc)]
+          [(equal? "P" (getPiece chessboard k_acc))
+           (drawPiece WP_IMG k_acc)]
+          [(equal? "k" (getPiece chessboard k_acc))
+           (drawPiece BK_IMG k_acc)]
+          [(equal? "r" (getPiece chessboard k_acc))
+           (drawPiece BR_IMG k_acc)]
+          [(equal? "q" (getPiece chessboard k_acc))
+           (drawPiece BQ_IMG k_acc)]
+          [(equal? "b" (getPiece chessboard k_acc))
+           (drawPiece BB_IMG k_acc)]
+          [(equal? "n" (getPiece chessboard k_acc))
+           (drawPiece BN_IMG k_acc)]
+          [(equal? "p" (getPiece chessboard k_acc))
+           (drawPiece BP_IMG k_acc)]
+          [(equal? " " (getPiece chessboard k_acc))
+           (draw chessboard (add1 k_acc))]))))
 
-(draw STANDARD_CHESSBOARD BACKGROUND 0)
+(draw STANDARD_CHESSBOARD 0)
 
 (define WK #b0000000000000000000000000000000000000000000000000000000000000000)
 (define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
@@ -124,93 +127,80 @@
 (define BITBOARDS
   (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
 
-(define (matrixToBitBoards CHESSBOARD BITBOARDS k_acc)
-  (cond
-    [(equal? 64 k_acc) BITBOARDS]
-    [(equal? "K" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 0 (+ (vector-ref BITBOARDS 0) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "Q" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 1 (+ (vector-ref BITBOARDS 1) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "R" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 2 (+ (vector-ref BITBOARDS 2) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "B" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 3 (+ (vector-ref BITBOARDS 3) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "N" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 4 (+ (vector-ref BITBOARDS 4) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "P" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 5 (+ (vector-ref BITBOARDS 5) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "k" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 6 (+ (vector-ref BITBOARDS 6) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "q" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 7 (+ (vector-ref BITBOARDS 7) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "r" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 8 (+ (vector-ref BITBOARDS 8) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "b" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 9 (+ (vector-ref BITBOARDS 9) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "n" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 10 (+ (vector-ref BITBOARDS 10) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? "p" (matrix_get CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8)))
-     (begin (vector-set! BITBOARDS 11 (+ (vector-ref BITBOARDS 11) (arithmetic-shift 1 (- 63 k_acc)))))
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [else
-     (begin (matrixToBitBoards CHESSBOARD BITBOARDS (add1 k_acc)))]))
+(define (matrixToBitBoards chessboard k_acc)
+  (local
+    ((define (getPiece chessboard matrixPosition)
+       (matrix_get chessboard (floor (/ matrixPosition 8)) (modulo matrixPosition 8)))
+     (define (writeBitBoard bitboard matrixPosition)
+       (begin (vector-set! BITBOARDS bitboard (+ (vector-ref BITBOARDS bitboard) (arithmetic-shift 1 (- 63 matrixPosition)))))
+       (begin (matrixToBitBoards chessboard (add1 matrixPosition)))))
+    (if (equal? 64 k_acc) BITBOARDS
+        (cond
+          [(equal? "K" (getPiece chessboard k_acc))
+           (writeBitBoard 0 k_acc)]
+          [(equal? "Q" (getPiece chessboard k_acc))
+           (writeBitBoard 1 k_acc)]
+          [(equal? "R" (getPiece chessboard k_acc))
+           (writeBitBoard 2 k_acc)]
+          [(equal? "B" (getPiece chessboard k_acc))
+           (writeBitBoard 3 k_acc)]
+          [(equal? "N" (getPiece chessboard k_acc))
+           (writeBitBoard 4 k_acc)]
+          [(equal? "P" (getPiece chessboard k_acc))
+           (writeBitBoard 5 k_acc)]
+          [(equal? "k" (getPiece chessboard k_acc))
+           (writeBitBoard 6 k_acc)]
+          [(equal? "q" (getPiece chessboard k_acc))
+           (writeBitBoard 7 k_acc)]
+          [(equal? "r" (getPiece chessboard k_acc))
+           (writeBitBoard 8 k_acc)]
+          [(equal? "b" (getPiece chessboard k_acc))
+           (writeBitBoard 9 k_acc)]
+          [(equal? "n" (getPiece chessboard k_acc))
+           (writeBitBoard 10 k_acc)]
+          [(equal? "p" (getPiece chessboard k_acc))
+           (writeBitBoard 11 k_acc)]
+          [(equal? " " (getPiece chessboard k_acc))
+           (matrixToBitBoards chessboard (add1 k_acc))]))))
 
-(define (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS k_acc)
-  (cond
-    [(equal? 64 k_acc) EMTPY_CHESSBOARD]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 0) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "K"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 1) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "Q"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 2) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "R"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 3) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "B"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 4) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "N"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 5) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "P"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 6) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "k"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 7) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "q"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 8) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "r"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 9) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "b"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 10) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "n"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS 11) (- k_acc 63))))
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) "p"))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]
-    [else
-     (begin (matrix_set EMTPY_CHESSBOARD (floor (/ k_acc 8)) (modulo k_acc 8) " "))
-     (begin (bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS (add1 k_acc)))]))
+(define (bitBoardsToMatrix chessboard k_acc)
+  (local
+    ((define (getBit bitboard matrixPosition)
+       (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS bitboard) (- matrixPosition 63))))
+     (define (writeChessBoard chessboard matrixPosition value)
+       (begin (matrix_set chessboard (floor (/ matrixPosition 8)) (modulo matrixPosition 8) value))
+       (begin (bitBoardsToMatrix chessboard (add1 k_acc)))))
+    (if (equal? 64 k_acc) chessboard
+        (cond
+          [(equal? 1 (getBit 0 k_acc))
+           (writeChessBoard chessboard k_acc "K")]
+          [(equal? 1 (getBit 1 k_acc))
+           (writeChessBoard chessboard k_acc "Q")]
+          [(equal? 1 (getBit 2 k_acc))
+           (writeChessBoard chessboard k_acc "R")]
+          [(equal? 1 (getBit 3 k_acc))
+           (writeChessBoard chessboard k_acc "B")]
+          [(equal? 1 (getBit 4 k_acc))
+           (writeChessBoard chessboard k_acc "N")]
+          [(equal? 1 (getBit 5 k_acc))
+           (writeChessBoard chessboard k_acc "P")]
+          [(equal? 1 (getBit 6 k_acc))
+           (writeChessBoard chessboard k_acc "k")]
+          [(equal? 1 (getBit 7 k_acc))
+           (writeChessBoard chessboard k_acc "q")]
+          [(equal? 1 (getBit 8 k_acc))
+           (writeChessBoard chessboard k_acc "r")]
+          [(equal? 1 (getBit 9 k_acc))
+           (writeChessBoard chessboard k_acc "b")]
+          [(equal? 1 (getBit 10 k_acc))
+           (writeChessBoard chessboard k_acc "n")]
+          [(equal? 1 (getBit 11 k_acc))
+           (writeChessBoard chessboard k_acc "p")]
+          [else
+           (writeChessBoard chessboard k_acc " ")]))))
 
-(matrixToBitBoards TEST_CHESSBOARD BITBOARDS 0)
-(bitBoardsToMatrix EMTPY_CHESSBOARD BITBOARDS 0)
+(matrixToBitBoards STANDARD_CHESSBOARD 0)
+(bitBoardsToMatrix STANDARD_CHESSBOARD 0)
 
 
 (define (printBitBoard2 BITBOARD k_acc)
