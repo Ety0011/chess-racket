@@ -6,24 +6,9 @@
 (require 2htdp/image)
 
 
-;; Costants
-(define WK_IMG (bitmap "img/WHITE_KING.png"))
-(define WQ_IMG (bitmap "img/WHITE_QUEEN.png"))
-(define WR_IMG (bitmap "img/WHITE_ROOK.png"))
-(define WB_IMG (bitmap "img/WHITE_BISHOP.png"))
-(define WN_IMG (bitmap "img/WHITE_KNIGHT.png"))
-(define WP_IMG (bitmap "img/WHITE_PAWN.png"))
-(define BK_IMG (bitmap "img/BLACK_KING.png"))
-(define BQ_IMG (bitmap "img/BLACK_QUEEN.png"))
-(define BR_IMG (bitmap "img/BLACK_ROOK.png"))
-(define BB_IMG (bitmap "img/BLACK_BISHOP.png"))
-(define BN_IMG (bitmap "img/BLACK_KNIGHT.png"))
-(define BP_IMG (bitmap "img/BLACK_PAWN.png"))
-
+(define SQUARE_SIDE 100)
 (define DARK_WOOD (make-color 191 108 58))
 (define LIGHT_WOOD (make-color 238 202 160))
-
-(define SQUARE_SIDE 100)
 (define LIGHT_SQUARE (square SQUARE_SIDE "solid" LIGHT_WOOD))
 (define DARK_SQUARE (square SQUARE_SIDE "solid" DARK_WOOD))
 
@@ -41,6 +26,20 @@
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)
          (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)))
+
+;; Costants
+(define WK_IMG (scale (/ SQUARE_SIDE 98) (bitmap "img/WHITE_KING.png")))
+(define WQ_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/WHITE_QUEEN.png")))
+(define WR_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/WHITE_ROOK.png")))
+(define WB_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/WHITE_BISHOP.png")))
+(define WN_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/WHITE_KNIGHT.png")))
+(define WP_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/WHITE_PAWN.png")))
+(define BK_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/BLACK_KING.png")))
+(define BQ_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/BLACK_QUEEN.png")))
+(define BR_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/BLACK_ROOK.png")))
+(define BB_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/BLACK_BISHOP.png")))
+(define BN_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/BLACK_KNIGHT.png")))
+(define BP_IMG (scale (/ SQUARE_SIDE 98)(bitmap "img/BLACK_PAWN.png")))
 
 (define EMTPY_CHESSBOARD
   (vector
