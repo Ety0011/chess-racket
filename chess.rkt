@@ -79,7 +79,7 @@
   (vector-ref (vector-ref matrix row) col))
 
 (define chessboardSet matrix row col value)
-  (vector-set! (vector-ref matrix row) col value))
+  (vector-set! (vector-ref matrix row) col value)
 
 (define (draw chessboard ChessboardIndex)
   (local
@@ -204,7 +204,7 @@
           [(equal? 1 (getBit 11 ChessboardIndex))
            (writeChessBoard chessboard ChessboardIndex "p")]
           [else
-           (writeChessBoard chessboard ChessboardIndex " ")]))))
+           (writeChessBoard chessboard ChessboardIndex " ")])))
 
 (chessboardToBitboards STANDARD_CHESSBOARD 0)
 (bitboardsToChessboard STANDARD_CHESSBOARD 0)
