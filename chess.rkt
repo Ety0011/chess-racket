@@ -435,13 +435,19 @@
      (arithmetic-shift              binaryPosition         -8)
      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -7))))
 
+
+(define RANK_2 #b0000000011111111000000000000000000000000000000000000000000000000)
+(define RANK_7 #b0000000000000000000000000000000000000000000000001111111100000000)
+
+
 (define (whitePawnMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) 9)
-     (arithmetic-shift (bitwise-and binaryPosition NOT_OCCUPIED) 8)
+     (bitwise-and (arithmetic-shift binaryPosition 8) NOT_OCCUPIED)
+     (bitwise-and (arithmetic-shift (bitwise-and binaryPosition RANK_7) 16) NOT_OCCUPIED)
      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) 7))))
 
 (define (blackPawnMoves ChessboardIndex)
@@ -449,9 +455,10 @@
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
-     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -9)
-     (arithmetic-shift (bitwise-and binaryPosition NOT_OCCUPIED) -8)
-     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) -7))))
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) -9)
+     (bitwise-and (arithmetic-shift binaryPosition -8) NOT_OCCUPIED)
+     (bitwise-and (arithmetic-shift (bitwise-and binaryPosition RANK_2) -16) NOT_OCCUPIED)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -7))))
 
 
 
