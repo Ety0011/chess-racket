@@ -311,6 +311,9 @@
 (define OCCUPIED
   (bitboardsXOR BITBOARDS 0))
 
+(define NOT_OCCUPIED
+  (bitwise-not OCCUPIED))
+
 
 (define RANKMASKS
   (vector
@@ -371,7 +374,7 @@
    #b0000000000000000000000000000000000000000000000000000000010000000))
 
 
-(define (horizontalVerticalMoves ChessboardIndex)
+(define (rookMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
@@ -384,7 +387,7 @@
     (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ ChessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo ChessboardIndex 8))))))
 
 
-(define (DiagonalAntiDiagonalMoves ChessboardIndex)
+(define (bishopMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
@@ -432,14 +435,23 @@
      (arithmetic-shift              binaryPosition         -8)
      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -7))))
 
-(define (pawnMoves ChessboardIndex)
+(define (whitePawnMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex))))
     (bitwise-ior
      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) 9)
-     (arithmetic-shift              binaryPosition         8)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_OCCUPIED) 8)
      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) 7))))
+
+(define (blackPawnMoves ChessboardIndex)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 63 ChessboardIndex))))
+    (bitwise-ior
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A) -9)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_OCCUPIED) -8)
+     (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H) -7))))
 
 
 
@@ -473,6 +485,6 @@
 
 
 (define enemyRook #b0000000000000000000000010000000000000000000000000000000000000000)
-(define rookAttacks (horizontalVerticalMoves 23))
+(define rookAttacks (rookMoves 23))
 (define testKing  #b0000000000000000000010000000000000000000000000000000000000000000)
 (isKingChecked testKing rookAttacks)
