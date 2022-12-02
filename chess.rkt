@@ -256,16 +256,47 @@
 
 ; Mossa Pietro
 ;;Pawn
-(define FILE_P #b0000000100000001000000010000000100000001000000010000000100000001)
+
 (define (PawnMoves matrixPosition)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 55 matrixPosition))))
+      (arithmetic-shift 1 (- 63 matrixPosition))))
     (bitwise-ior
-      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 7)
-      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 8)
-      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 9)
-      (arithmetic-shift (bitwise-and binaryPosition FILE_P) 16))))
+      ;Capture Right
+      (arithmetic-shift (bitwise-and binaryPosition FILE_A RANKMASKS) 7)
+      ;Capture Left
+      (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) 9))
+
+    ;Move either 2 or 1 forward 
+    (cond
+      ;move 1 forward 
+      [(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
+      ;move 2 forward from the 2nd line
+      [(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
+    )
+  )
+)
+      
+     
+(define (BPawnMoves matrixPosition)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 63 matrixPosition))))
+    (bitwise-ior
+      ;Capture left
+      (arithmetic-shift (bitwise-and binaryPosition FILE_H RANKMASKS) -7)
+      ;Capture right
+      (arithmetic-shift (bitwise-and binaryPosition FILE_A RANKMASKS) -9))
+    
+    ;Move either 2 or 1 forward 
+    (cond
+      ;move 1 forward 
+      [(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -8))]
+      ;move 2 forward from the 2nd line
+      [(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -16)]
+    )
+  )
+)
      
 
 ; Mossa Ety
