@@ -5,6 +5,12 @@
 (require racket/format)
 (require 2htdp/image)
 
+
+
+
+
+
+;; Costants
 (define WK_IMG (bitmap "img/WHITE_KING.png"))
 (define WQ_IMG (bitmap "img/WHITE_QUEEN.png"))
 (define WR_IMG (bitmap "img/WHITE_ROOK.png"))
@@ -25,6 +31,11 @@
 (define LIGHT_SQUARE (square SQUARE_SIDE "solid" LIGHT_WOOD))
 (define DARK_SQUARE (square SQUARE_SIDE "solid" DARK_WOOD))
 
+
+
+;; Data type
+;  Background is an Image
+;  Interpretation: it rapresents a chessboard, composed by 64 squares (an 8x8 square) alternating in a dark and a light color
 (define BACKGROUND
   (above (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)
