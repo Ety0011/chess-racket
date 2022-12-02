@@ -55,12 +55,12 @@
 (define STANDARD_CHESSBOARD
   (vector
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
-   (vector "p" "p" "p" "p" "p" "p" "p" "p")
+   (vector "p" "p" "p" "p" " " "p" "p" "p")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " "p" "P" " " " ")
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " "Q" " " "K" " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector "P" "P" "P" "P" "P" "P" "P" "P")
+   (vector "P" "P" "P" "P" "P" " " "P" "P")
    (vector "R" "N" "B" "Q" "K" "B" "N" "R")))
 
 (define TEST_CHESSBOARD
@@ -501,3 +501,71 @@
 (define rookAttacks (rookMoves 23))
 (define testKing  #b0000000000000000000010000000000000000000000000000000000000000000)
 (isKingChecked testKing rookAttacks)
+
+
+
+
+
+
+
+
+
+; LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL
+
+
+; A Maybe<Posn> is one of:
+; - Posn: the posn exists
+; - #false : the posn is missing
+; A posn that may be missing
+
+; A MovingPiece is a Structure (make-movingPiece pieceIMG positionXY) where
+; - pieceIMG: Image
+; - positionXY: Posn
+
+; An ChessboardState is a Structure (make-chessboardState chessboard bitboards movingPiece quit) where:
+; - chessboard: Vector of Vectors of Strings
+; - bitboards: Vector of Numbers
+; - movingPiece: Maybe<Posn>
+; - quit: Boolean
+; A state of the application where:
+; - 'canvas' is an Image of the drawing canvas, which is initially empty and then includes the lines that are drawn.
+; - 'line' is the currently drawn Line2D (if there is any) which goes from an initial point to the current end point
+; - 'quit' is a Boolean that stores the information of whether the application has quit or not
+(define-struct chessboardState [chessboardIMG chessboard bitboards movingPiece quit])
+
+
+(define (draw chessboardState)
+  (if (posn? (chessboardState-movingPiece chessboardState))
+      (place-image (movingPiece-pieceIMG (chessboardState-movingPiece chessboardState))
+                   (posn-x (movingPiece-positionXY (chessboardState-movingPiece chessboardState)))
+                   (posn-y (movingPiece-positionXY (chessboardState-movingPiece chessboardState)))
+                   (chessboardState-chessboardIMG chessboardState))
+      (chessboardState-chessboardIMG chessboardState)))
+
+
+(define (move-start appstate new-x new-y)
+  (make-appstate (appstate-canvas appstate)
+                 (make-line2D (make-posn new-x new-y)
+                              (make-posn new-x new-y))
+                 (appstate-quit appstate)))
+
+(define (move-end appstate new-x new-y)
+  (if (line2D? (appstate-current_line appstate))
+      (make-appstate (appstate-canvas appstate)
+                     (make-line2D (line2D-P1 (appstate-current_line appstate))
+                                  (make-posn new-x new-y))
+                     (appstate-quit appstate))
+      
+      (make-appstate (appstate-canvas appstate)
+                     (appstate-current_line appstate)
+                     (appstate-quit appstate))))
+
+
+
+(define (handle-mouse appstate x-mouse y-mouse mouse-event)
+  (cond
+    [(string=? "button-down" mouse-event) (move-start appstate x-mouse y-mouse)]
+    [(and (string=? "drag" mouse-event)
+          (line2D? (appstate-current_line appstate))) (move-end appstate x-mouse y-mouse)]
+    [(string=? "button-up" mouse-event) (add-line-to-canvas appstate)]
+    [else appstate]))
