@@ -78,8 +78,8 @@
 (define (chessboardGet matrix row col)
   (vector-ref (vector-ref matrix row) col))
 
-(define chessboardSet matrix row col value)
-  (vector-set! (vector-ref matrix row) col value)
+(define (chessboardSet matrix row col value)
+  (vector-set! (vector-ref matrix row) col value))
 
 (define (draw chessboard ChessboardIndex)
   (local
@@ -175,7 +175,7 @@
     ((define (getBit bitboard ChessboardIndex)
        (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS bitboard) (- ChessboardIndex 63))))
      (define (writeChessBoard chessboard ChessboardIndex value)
-       (begin chessboardSet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8) value))
+       (begin (chessboardSet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8) value))
        (begin (bitboardsToChessboard chessboard (add1 ChessboardIndex)))))
     (if (equal? 64 ChessboardIndex) chessboard
         (cond
@@ -204,7 +204,7 @@
           [(equal? 1 (getBit 11 ChessboardIndex))
            (writeChessBoard chessboard ChessboardIndex "p")]
           [else
-           (writeChessBoard chessboard ChessboardIndex " ")])))
+           (writeChessBoard chessboard ChessboardIndex " ")]))))
 
 (chessboardToBitboards STANDARD_CHESSBOARD 0)
 (bitboardsToChessboard STANDARD_CHESSBOARD 0)
