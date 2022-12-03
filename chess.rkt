@@ -272,55 +272,6 @@
 ;   - the bitshift represents the direction of where the piece can go
 ;   - there are the new coordinates of the pieces after the bitshift
 
-; Mossa Pietro
-;;Pawn
-
-(define (PawnMoves ChessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-      ;Capture Right
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A RANKMASKS) 7)
-      ;Capture Left
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H RANKMASKS) 9))
-
-
-    ;Pietro non puoi mettere due body diversi nella stessa funzione. Ho commentato il secondo body
-    ; perche altrimenti mi da errore
-    
-    ;Move either 2 or 1 forward 
-    ;(cond
-      ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
-      ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
-    )
-  )
-;)
-      
-     
-(define (BPawnMoves ChessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-      ;Capture left
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H RANKMASKS) -7)
-      ;Capture right
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A RANKMASKS) -9))
-
-    ; QUESTA FUNZIONE E ROTTA, NON PUOI SCRIVERE UN SECONDO BODY... ESCE ERRORE
-    
-    ;Move either 2 or 1 forward 
-    ;(cond
-      ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -8))]
-      ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -16)]
-    )
-  )
-;)
      
 
 ; Mossa Ety
@@ -515,22 +466,35 @@
      (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
      (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
 
-     
-
-; Mossa Pietro
-;;Knight
-; returns the moveset of the knight
-(define (KNIGHT-NW bit-board row col)
+(define (whitePawnPromotion ChessboardIndex)
+  (if (equal? RANK_8 ) 
     (cond
-    [(and(= col 1)(= row 2)) (bit-board(and(arithmetic-shift col 1)(arithmetic-shift row 2)))]
-    [(and(= col -1)(= row 2)) (bit-board(and(arithmetic-shift col -1)(arithmetic-shift row 2)))]
-    [(and(= col 2)(= row 1)) (bit-board(and(arithmetic-shift col 2)(arithmetic-shift row 1)))]
-    [(and(= col 2)(= row -1)) (bit-board(and(arithmetic-shift col 2)(arithmetic-shift row -1)))]
-    [(and(= col -2)(= row 1)) (bit-board(and(arithmetic-shift col -2)(arithmetic-shift row 1)))]
-    [(and(= col -2)(= row -1)) (bit-board(and(arithmetic-shift col -2)(arithmetic-shift row -1)))]
-    [(and(= col 1)(= row -2)) (bit-board(and(arithmetic-shift col 1)(arithmetic-shift row -2)))]
-    [(and(= col -1)(= row -2)) (bit-board(and(arithmetic-shift col -1)(arithmetic-shift row -2)))]
+      ;Promotion to queen 
+      [()(make-WQ)]
+      ;Promotion to Knight
+      [()(make-WN)]
+      ;Promotion to Rook
+      [()(make-WR)]
+      ;Promotion to Bishop
+      [()(make-WB)]
     )
+    (ChessboardIndex)
+  )
+)
+(define (blackPawnPromotion ChessboardIndex)
+  (if (equal? RANK_1 ) 
+    (cond
+      ;Promotion to queen 
+      [()(make-BQ)]
+      ;Promotion to Knight
+      [()(make-BN)]
+      ;Promotion to Rook
+      [()(make-BR)]
+      ;Promotion to Bishop
+      [()(make-BB)]
+    )
+    (ChessboardIndex)
+  )
 )
 
 (define (numberOfTrailingZeros bb no-zeroes)
@@ -586,7 +550,8 @@
     [(zero? (bitwise-and pawnBitBoard (arithmetic-shift 1 pawn_acc))) (getBlackPawnAttacks-backend pawnBitBoard occupied attack_bitboard (add1 pawn_acc))]
     [else
       (getBlackPawnAttacks-backend pawnBitBoard occupied (bitwise-ior (blackPawnAttacks pawn_acc) attack_bitboard) (add1 pawn_acc))
-    ]))
+    ])
+    )
 
 ;; USE THESE FUNCTIONS
 ; - rook attacks frontend
