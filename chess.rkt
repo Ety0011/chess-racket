@@ -623,7 +623,7 @@
 ;(printBitboard (getRookAttacks BR-test))
 ;(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0) ; NOT WORKING
 
-(printBitboard (rookMoves (bitboardsXOR (bitboardsToChessboard testboard) 0) 2))
+(printBitboard (rookMoves OCCUPIED 2))
 
 
 
