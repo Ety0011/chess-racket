@@ -324,12 +324,12 @@
      
 
 ; Mossa Ety
-(define (reverseBinary2 b ChessboardIndex total_sum)
+(define (reverseBinary2 b ChessboardIndex totalSum)
   (cond
-    [(equal? 64 ChessboardIndex) total_sum]
+    [(equal? 64 ChessboardIndex) totalSum]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift b (- ChessboardIndex 63))))
-       (reverseBinary2 b (add1 ChessboardIndex) (+ total_sum (arithmetic-shift 1 ChessboardIndex)))]
-    [else (reverseBinary2 b (add1 ChessboardIndex) total_sum)]))
+       (reverseBinary2 b (add1 ChessboardIndex) (+ totalSum (arithmetic-shift 1 ChessboardIndex)))]
+    [else (reverseBinary2 b (add1 ChessboardIndex) totalSum)]))
 
 (define (reverseBinary b)
   (reverseBinary2 b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
@@ -548,6 +548,16 @@
     [else
       (getRookAttacks-backend rookBitBoard occupied  (bitwise-ior (rookMoves occupied rook_acc) attack_bitboard) (add1 rook_acc))
   ]))
+
+(define (allRookAttacks rb occupied chessboardIndex totalSum)
+  (cond
+    [(equal? 64 chessboardIndex) totalSum]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift rb (- chessboardIndex 63))))
+     (allRookAttacks rb occupied (add1 chessboardIndex) (bitwise-ior totalSum (rookMoves occupied chessboardIndex)))]
+    [else (allRookAttacks rb occupied (add1 chessboardIndex) totalSum)]))
+    
+  
+      
 
 ; get bishop attacks 
 (define (getBishopAttacks-backend bishopBitBoard occupied attack_bitboard bishop_acc ) 
