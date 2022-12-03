@@ -272,57 +272,6 @@
 ;   - the bitshift represents the direction of where the piece can go
 ;   - there are the new coordinates of the pieces after the bitshift
 
-; Mossa Pietro
-;;Pawn
-
-(define (PawnMoves ChessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-      ;Capture Right
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A RANKMASKS) 7)
-      ;Capture Left
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H RANKMASKS) 9))
-
-
-    ;Pietro non puoi mettere due body diversi nella stessa funzione. Ho commentato il secondo body
-    ; perche altrimenti mi da errore
-    
-    ;Move either 2 or 1 forward 
-    ;(cond
-      ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 8))]
-      ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) 16)]
-    )
-  )
-;)
-      
-     
-(define (BPawnMoves ChessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-      ;Capture left
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_H RANKMASKS) -7)
-      ;Capture right
-      (arithmetic-shift (bitwise-and binaryPosition NOT_FILE_A RANKMASKS) -9))
-
-    ; QUESTA FUNZIONE E ROTTA, NON PUOI SCRIVERE UN SECONDO BODY... ESCE ERRORE
-    
-    ;Move either 2 or 1 forward 
-    ;(cond
-      ;move 1 forward 
-      ;[(not(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -8))]
-      ;move 2 forward from the 2nd line
-      ;[(equal? 2 (modulo binaryPosition 8)) (arithmetic-shift (bitwise-and binaryPosition RANKMASKS) -16)]
-    )
-  )
-;)
-     
-
 ; Mossa Ety
 (define (reverseBinary2 b ChessboardIndex total_sum)
   (cond
@@ -517,21 +466,6 @@
 
      
 
-; Mossa Pietro
-;;Knight
-; returns the moveset of the knight
-(define (KNIGHT-NW bit-board row col)
-    (cond
-    [(and(= col 1)(= row 2)) (bit-board(and(arithmetic-shift col 1)(arithmetic-shift row 2)))]
-    [(and(= col -1)(= row 2)) (bit-board(and(arithmetic-shift col -1)(arithmetic-shift row 2)))]
-    [(and(= col 2)(= row 1)) (bit-board(and(arithmetic-shift col 2)(arithmetic-shift row 1)))]
-    [(and(= col 2)(= row -1)) (bit-board(and(arithmetic-shift col 2)(arithmetic-shift row -1)))]
-    [(and(= col -2)(= row 1)) (bit-board(and(arithmetic-shift col -2)(arithmetic-shift row 1)))]
-    [(and(= col -2)(= row -1)) (bit-board(and(arithmetic-shift col -2)(arithmetic-shift row -1)))]
-    [(and(= col 1)(= row -2)) (bit-board(and(arithmetic-shift col 1)(arithmetic-shift row -2)))]
-    [(and(= col -1)(= row -2)) (bit-board(and(arithmetic-shift col -1)(arithmetic-shift row -2)))]
-    )
-)
 
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
