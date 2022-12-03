@@ -4,7 +4,11 @@
 (require racket/base)
 (require racket/format)
 (require 2htdp/image)
+(require 2htdp/universe)
 
+
+(define WHITE #true)
+(define BLACK #false)
 
 (define SQUARE_SIDE 100)
 (define DARK_WOOD (make-color 191 108 58))
@@ -80,12 +84,12 @@
 (define (chessboardSet matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
-(define (draw chessboard ChessboardIndex)
+(define (drawPieces chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
        (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
      (define (drawPiece pieceIMG ChessboardIndex)
-       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (draw chessboard (add1 ChessboardIndex))))) 
+       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (drawPieces chessboard (add1 ChessboardIndex))))) 
     (if (equal? 64 ChessboardIndex) BACKGROUND
         (cond
           [(equal? "K" (getPiece chessboard ChessboardIndex))
@@ -113,9 +117,7 @@
           [(equal? "p" (getPiece chessboard ChessboardIndex))
            (drawPiece BP_IMG ChessboardIndex)]
           [(equal? " " (getPiece chessboard ChessboardIndex))
-           (draw chessboard (add1 ChessboardIndex))]))))
-
-(draw STANDARD_CHESSBOARD 0)
+           (drawPieces chessboard (add1 ChessboardIndex))]))))
 
 (define WK #b0000000000000000000000000000000000000000000000000000000000000000)
 (define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
@@ -513,59 +515,151 @@
 ; LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL
 
 
-; A Maybe<Posn> is one of:
-; - Posn: the posn exists
-; - #false : the posn is missing
-; A posn that may be missing
 
-; A MovingPiece is a Structure (make-movingPiece pieceIMG positionXY) where
-; - pieceIMG: Image
-; - positionXY: Posn
+; A CurrentMove is a Structure (make-currentMove image type color start end) where:
+; -
+(define-struct currentMove [image type color start end])
 
-; An ChessboardState is a Structure (make-chessboardState chessboard bitboards movingPiece quit) where:
+; A Maybe<CurrentMove> is one of:
+; - CurrentMove: the CurrentMove exists
+; - #false : the CurrentMove is missing
+; A CurrentMove that may be missing
+
+; A worldState is a Structure (make-worldState image chessboard bitboards currentMove quit) where:
 ; - chessboard: Vector of Vectors of Strings
 ; - bitboards: Vector of Numbers
-; - movingPiece: Maybe<Posn>
+; - CurrentMove: CurrentMove
 ; - quit: Boolean
 ; A state of the application where:
 ; - 'canvas' is an Image of the drawing canvas, which is initially empty and then includes the lines that are drawn.
 ; - 'line' is the currently drawn Line2D (if there is any) which goes from an initial point to the current end point
 ; - 'quit' is a Boolean that stores the information of whether the application has quit or not
-(define-struct chessboardState [chessboardIMG chessboard bitboards movingPiece quit])
+(define-struct worldState [image chessboard bitboards currentMove quit])
 
 
-(define (draw chessboardState)
-  (if (posn? (chessboardState-movingPiece chessboardState))
-      (place-image (movingPiece-pieceIMG (chessboardState-movingPiece chessboardState))
-                   (posn-x (movingPiece-positionXY (chessboardState-movingPiece chessboardState)))
-                   (posn-y (movingPiece-positionXY (chessboardState-movingPiece chessboardState)))
-                   (chessboardState-chessboardIMG chessboardState))
-      (chessboardState-chessboardIMG chessboardState)))
+(define (draw worldState)
+  (if (currentMove? (worldState-currentMove worldState))
+      (place-image (currentMove-image (worldState-currentMove worldState))
+                   (posn-x (currentMove-end (worldState-currentMove worldState)))
+                   (posn-y (currentMove-end (worldState-currentMove worldState)))
+                   (worldState-image worldState))
+      (worldState-image worldState)))
 
 
-(define (move-start appstate new-x new-y)
-  (make-appstate (appstate-canvas appstate)
-                 (make-line2D (make-posn new-x new-y)
-                              (make-posn new-x new-y))
-                 (appstate-quit appstate)))
+(define (startMove worldState new-x new-y)
+  (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   (newCurrentMove worldState new-x new-y)
+                   (worldState-quit worldState)))
 
-(define (move-end appstate new-x new-y)
-  (if (line2D? (appstate-current_line appstate))
-      (make-appstate (appstate-canvas appstate)
-                     (make-line2D (line2D-P1 (appstate-current_line appstate))
-                                  (make-posn new-x new-y))
-                     (appstate-quit appstate))
-      
-      (make-appstate (appstate-canvas appstate)
-                     (appstate-current_line appstate)
-                     (appstate-quit appstate))))
-
-
-
-(define (handle-mouse appstate x-mouse y-mouse mouse-event)
+(define (newCurrentMove worldState new-x new-y)
+  (local
+    ((define piece
+       (chessboardGet (worldState-chessboard worldState) (floor (/ new-y SQUARE_SIDE)) (floor (/ new-x SQUARE_SIDE)))))
   (cond
-    [(string=? "button-down" mouse-event) (move-start appstate x-mouse y-mouse)]
+    [(equal? "K" piece)
+     (make-currentMove WK_IMG "K" WHITE (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "Q" piece)
+     (make-currentMove WQ_IMG "Q" WHITE (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "R" piece)
+     (make-currentMove WR_IMG "R" WHITE (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "B" piece)
+     (make-currentMove WB_IMG "B" WHITE (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "N" piece)
+     (make-currentMove WN_IMG "N" WHITE (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "P" piece)
+     (make-currentMove WP_IMG "P" WHITE (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "k" piece)
+     (make-currentMove BK_IMG "k" BLACK (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "q" piece)
+     (make-currentMove BQ_IMG "q" BLACK (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "r" piece)
+     (make-currentMove BR_IMG "r" BLACK (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "b" piece)
+     (make-currentMove BB_IMG "b" BLACK (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "n" piece)
+     (make-currentMove BN_IMG "n" BLACK (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? "p" piece)
+     (make-currentMove BP_IMG "p" BLACK (make-posn new-x new-y) (make-posn new-x new-y))]
+    [(equal? " " piece)
+     #false])))
+
+(define (changeMove worldState new-x new-y)
+  (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   (make-currentMove (currentMove-image (worldState-currentMove worldState))
+                                     (currentMove-type (worldState-currentMove worldState))
+                                     (currentMove-color (worldState-currentMove worldState))
+                                     (currentMove-start (worldState-currentMove worldState))
+                                     (make-posn new-x new-y))
+                   (worldState-quit worldState)))
+
+
+
+(define (quit worldState)
+  (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   (worldState-currentMove worldState)
+                   #true))
+
+(define (quit? worldState)
+  (if (equal? #t (worldState-quit worldState))
+      #t
+      #f))
+
+(define (handle-key worldState key-event)
+  (cond
+    [(string=? "q" key-event) (quit worldState)]
+    [else worldState]))
+
+(define (handle-mouse worldState x-mouse y-mouse mouse-event)
+  (cond
+    [(string=? "button-down" mouse-event) (startMove worldState x-mouse y-mouse)]
     [(and (string=? "drag" mouse-event)
-          (line2D? (appstate-current_line appstate))) (move-end appstate x-mouse y-mouse)]
-    [(string=? "button-up" mouse-event) (add-line-to-canvas appstate)]
-    [else appstate]))
+          (currentMove? (worldState-currentMove worldState))) (changeMove worldState x-mouse y-mouse)]
+    [else worldState]))
+
+
+
+(define (makeMove worldState new-x new-y)
+  (if (currentMove? (worldState-currentMove worldState))
+      (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   #false
+                   (worldState-quit worldState))
+      (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   (worldState-currentMove worldState)
+                   (worldState-quit worldState))))
+
+(define initialState (make-worldState
+                        (drawPieces STANDARD_CHESSBOARD 0)
+                        STANDARD_CHESSBOARD
+                        BITBOARDS
+                        #false
+                        #false))
+
+(define (drawing-app initialState)
+  (big-bang initialState
+    [to-draw draw]
+    [on-mouse handle-mouse]
+    [on-key handle-key]
+    [stop-when quit?]))
+
+(drawing-app initialState)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;(define (handle-mouse2 appstate x-mouse y-mouse mouse-event)
+;  (cond
+;    [(string=? "button-down" mouse-event) (move-start appstate x-mouse y-mouse)]
+;    [(and (string=? "drag" mouse-event)
+;          (line2D? (appstate-current_line appstate))) (move-end appstate x-mouse y-mouse)]
+;    [(string=? "button-up" mouse-event) (add-line-to-canvas appstate)]
+;    [else appstate]))
