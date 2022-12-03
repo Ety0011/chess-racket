@@ -540,77 +540,75 @@
 
 ;; King Safety v2
 ; get rooks attacks 
-(define (getRookAttacks-backend rookBitBoard  attack_bitboard rook_acc) 
+(define (getRookAttacks-backend rookBitBoard occupied attack_bitboard rook_acc) 
   (cond
     [(= rook_acc 64) attack_bitboard]
-    [(zero? (bitwise-and rookBitBoard (arithmetic-shift 1 rook_acc))) (getRookAttacks-backend rookBitBoard attack_bitboard (add1 rook_acc)) ]
+    [(zero? (bitwise-and rookBitBoard (arithmetic-shift 1 rook_acc))) (getRookAttacks-backend rookBitBoard occupied attack_bitboard (add1 rook_acc)) ]
     [else
-      (getRookAttacks-backend rookBitBoard  (bitwise-ior (rookMoves rook_acc) attack_bitboard) (add1 rook_acc))
+      (getRookAttacks-backend rookBitBoard occupied  (bitwise-ior (rookMoves occupied rook_acc) attack_bitboard) (add1 rook_acc))
   ]))
 
 ; get bishop attacks 
-(define (getBishopAttacks-backend bishopBitBoard attack_bitboard bishop_acc ) 
+(define (getBishopAttacks-backend bishopBitBoard occupied attack_bitboard bishop_acc ) 
   (cond
     [(= bishop_acc 64) attack_bitboard]
-    [(zero? (bitwise-and bishopBitBoard (arithmetic-shift 1 bishop_acc))) (getBishopAttacks-backend bishopBitBoard attack_bitboard (add1 bishop_acc)) ]
+    [(zero? (bitwise-and bishopBitBoard (arithmetic-shift 1 bishop_acc))) (getBishopAttacks-backend bishopBitBoard occupied attack_bitboard (add1 bishop_acc)) ]
     [else
-      (getBishopAttacks-backend bishopBitBoard  (bitwise-ior (bishopMoves bishop_acc ) attack_bitboard) (add1 bishop_acc))
+      (getBishopAttacks-backend bishopBitBoard occupied (bitwise-ior (bishopMoves occupied bishop_acc ) attack_bitboard) (add1 bishop_acc))
   ]))
 
 ; get queen attacks - NOT YET IMPLEMENTED
 
 ; get knight attacks
-(define (getKnightAttacks-backend knightBitBoard attack_bitboard knight_acc )
+(define (getKnightAttacks-backend knightBitBoard occupied attack_bitboard knight_acc )
   (cond
     [(= knight_acc 64) attack_bitboard]
-    [(zero? (bitwise-and knightBitBoard (arithmetic-shift 1 knight_acc))) (getKnightAttacks-backend knightBitBoard attack_bitboard (add1 knight_acc))]
+    [(zero? (bitwise-and knightBitBoard (arithmetic-shift 1 knight_acc))) (getKnightAttacks-backend knightBitBoard occupied attack_bitboard (add1 knight_acc))]
     [else
-      (getKnightAttacks-backend knightBitBoard (bitwise-ior (knightMoves knight_acc) attack_bitboard) (add1 knight_acc))
+      (getKnightAttacks-backend knightBitBoard occupied (bitwise-ior (knightMoves knight_acc) attack_bitboard) (add1 knight_acc))
     ]))
 
 ; get black pawn attacks
-(define (getBlackPawnAttacks-backend pawnBitBoard attack_bitboard pawn_acc )
+(define (getBlackPawnAttacks-backend pawnBitBoard occupied attack_bitboard pawn_acc )
   (cond
     [(= pawn_acc 64) attack_bitboard]
-    [(zero? (bitwise-and pawnBitBoard (arithmetic-shift 1 pawn_acc))) (getBlackPawnAttacks-backend pawnBitBoard attack_bitboard (add1 pawn_acc))]
+    [(zero? (bitwise-and pawnBitBoard (arithmetic-shift 1 pawn_acc))) (getBlackPawnAttacks-backend pawnBitBoard occupied attack_bitboard (add1 pawn_acc))]
     [else
-      (getBlackPawnAttacks-backend pawnBitBoard (bitwise-ior (blackPawnAttacks pawn_acc) attack_bitboard) (add1 pawn_acc))
+      (getBlackPawnAttacks-backend pawnBitBoard occupied (bitwise-ior (blackPawnAttacks pawn_acc) attack_bitboard) (add1 pawn_acc))
     ]))
 
 ;; USE THESE FUNCTIONS
 ; - rook attacks frontend
 ; Get a bitboard with the combined attacks of all rooks in a bitboard
-(define (getRookAttacks rookBitBoard)
-  (getRookAttacks-backend rookBitBoard 0 0))
+(define (getRookAttacks rookBitBoard occupied)
+  (getRookAttacks-backend rookBitBoard occupied 0 0))
 
 ; - bishop attacks frontend
 ; Get a bitboard with the combined attacks of all bishops in a bitboard
-(define (getBishopAttacks bishopBitBoard)
-  (getBishopAttacks-backend bishopBitBoard 0 0))
+(define (getBishopAttacks bishopBitBoard occupied)
+  (getBishopAttacks-backend bishopBitBoard occupied 0 0))
 
 ; - knight attacks frontend
 ; Get a bitboard with the combined attacks of all knights in a bitboard
-(define (getKnightAttacks knightBitBoard)
-  (getKnightAttacks-backend knightBitBoard 0 0))
+(define (getKnightAttacks knightBitBoard occupied)
+  (getKnightAttacks-backend knightBitBoard occupied 0 0))
 
 ; - black pawn attacks frontend
-(define (getBlackPawnAttacks pawnBitBoard)
-  (getBlackPawnAttacks-backend pawnBitBoard 0 0))
+(define (getBlackPawnAttacks pawnBitBoard occupied)
+  (getBlackPawnAttacks-backend pawnBitBoard occupied 0 0))
 
 
-(define (getBlackAttacks BR BB BN BP)
-  (bitwise-ior (bitwise-ior (getRookAttacks      BR) 
-                            (getBishopAttacks    BB)) 
-               (bitwise-ior (getKnightAttacks    BN) 
-                            (getBlackPawnAttacks BP)) )) ; add king and queen later
+(define (getBlackAttacks BR BB BN BP occupied)
+  (bitwise-ior (bitwise-ior (getRookAttacks      BR occupied) 
+                            (getBishopAttacks    BB occupied)) 
+               (bitwise-ior (getKnightAttacks    BN occupied) 
+                            (getBlackPawnAttacks BP occupied)) )) ; add king and queen later
 
-(define (isWhiteKingSafe WK BP BR BB BN BQ BK )
-  (local [(define blackAttacks (getBlackAttacks BR BB BN BP))] ; TODO: add king and queen later
+(define (isWhiteKingSafe WK BP BR BB BN BQ BK occupied)
+  (local [(define blackAttacks (getBlackAttacks BR BB BN BP occupied))] ; TODO: add king and queen later
     (if (zero? (bitwise-and WK blackAttacks)) #t 
         #f)))
 
-
-; testino
 
 ; testino
 
