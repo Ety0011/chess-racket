@@ -84,12 +84,12 @@
 (define (chessboardSet matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
-(define (drawPieces chessboard ChessboardIndex)
+(define (drawPieces2 chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
        (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
      (define (drawPiece pieceIMG ChessboardIndex)
-       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (drawPieces chessboard (add1 ChessboardIndex))))) 
+       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (drawPieces2 chessboard (add1 ChessboardIndex))))) 
     (if (equal? 64 ChessboardIndex) BACKGROUND
         (cond
           [(equal? "K" (getPiece chessboard ChessboardIndex))
@@ -117,7 +117,10 @@
           [(equal? "p" (getPiece chessboard ChessboardIndex))
            (drawPiece BP_IMG ChessboardIndex)]
           [(equal? " " (getPiece chessboard ChessboardIndex))
-           (drawPieces chessboard (add1 ChessboardIndex))]))))
+           (drawPieces2 chessboard (add1 ChessboardIndex))]))))
+
+(define (drawPieces chessboard)
+  (drawPieces2 chessboard 0))
 
 (define WK #b0000000000000000000000000000000000000000000000000000000000000000)
 (define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
@@ -135,13 +138,13 @@
 (define BITBOARDS
   (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
 
-(define (chessboardToBitboards chessboard ChessboardIndex)
+(define (chessboardToBitboards2 chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
        (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
      (define (writeBitBoard bitboard ChessboardIndex)
        (begin (vector-set! BITBOARDS bitboard (+ (vector-ref BITBOARDS bitboard) (arithmetic-shift 1 (- 63 ChessboardIndex)))))
-       (begin (chessboardToBitboards chessboard (add1 ChessboardIndex)))))
+       (begin (chessboardToBitboards2 chessboard (add1 ChessboardIndex)))))
     (if (equal? 64 ChessboardIndex) BITBOARDS
         (cond
           [(equal? "K" (getPiece chessboard ChessboardIndex))
@@ -169,15 +172,18 @@
           [(equal? "p" (getPiece chessboard ChessboardIndex))
            (writeBitBoard 11 ChessboardIndex)]
           [(equal? " " (getPiece chessboard ChessboardIndex))
-           (chessboardToBitboards chessboard (add1 ChessboardIndex))]))))
+           (chessboardToBitboards2 chessboard (add1 ChessboardIndex))]))))
 
-(define (bitboardsToChessboard chessboard ChessboardIndex)
+(define (chessboardToBitboards chessboard)
+  (chessboardToBitboards2 chessboard 0))
+
+(define (bitboardsToChessboard2 chessboard ChessboardIndex)
   (local
     ((define (getBit bitboard ChessboardIndex)
        (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS bitboard) (- ChessboardIndex 63))))
      (define (writeChessBoard chessboard ChessboardIndex value)
        (begin (chessboardSet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8) value))
-       (begin (bitboardsToChessboard chessboard (add1 ChessboardIndex)))))
+       (begin (bitboardsToChessboard2 chessboard (add1 ChessboardIndex)))))
     (if (equal? 64 ChessboardIndex) chessboard
         (cond
           [(equal? 1 (getBit 0 ChessboardIndex))
@@ -207,8 +213,11 @@
           [else
            (writeChessBoard chessboard ChessboardIndex " ")]))))
 
-(chessboardToBitboards STANDARD_CHESSBOARD 0)
-(bitboardsToChessboard STANDARD_CHESSBOARD 0)
+(define (bitboardsToChessboard chessboard)
+  (bitboardsToChessboard2 chessboard 0))
+
+(chessboardToBitboards STANDARD_CHESSBOARD)
+(bitboardsToChessboard STANDARD_CHESSBOARD)
 
 
 (define (printBitboard2 bitboard ChessboardIndex)
@@ -547,11 +556,16 @@
 
 
 (define (startMove worldState new-x new-y)
-  (make-worldState (worldState-image worldState)
+  (make-worldState (hideSelectedPiece worldState new-x new-y)
                    (worldState-chessboard worldState)
                    (worldState-bitboards worldState)
                    (newCurrentMove worldState new-x new-y)
                    (worldState-quit worldState)))
+
+(define (hideSelectedPiece worldState new-x new-y)
+  (if (equal? 0 (modulo (+ (floor (/ new-y SQUARE_SIDE)) (floor (/ new-x SQUARE_SIDE))) 2))
+      (place-image LIGHT_SQUARE (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-x SQUARE_SIDE)))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-y SQUARE_SIDE)))) (worldState-image worldState))
+      (place-image DARK_SQUARE (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-x SQUARE_SIDE)))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-y SQUARE_SIDE)))) (worldState-image worldState))))
 
 (define (newCurrentMove worldState new-x new-y)
   (local
@@ -596,7 +610,18 @@
                                      (make-posn new-x new-y))
                    (worldState-quit worldState)))
 
-
+(define (makeMove worldState new-x new-y)
+  (if (currentMove? (worldState-currentMove worldState))
+      (make-worldState (drawPieces (worldState-chessboard worldState))
+                       (worldState-chessboard worldState)
+                       (worldState-bitboards worldState)
+                       #false
+                       (worldState-quit worldState))
+      (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   (worldState-currentMove worldState)
+                   (worldState-quit worldState))))
 
 (define (quit worldState)
   (make-worldState (worldState-image worldState)
@@ -620,25 +645,15 @@
     [(string=? "button-down" mouse-event) (startMove worldState x-mouse y-mouse)]
     [(and (string=? "drag" mouse-event)
           (currentMove? (worldState-currentMove worldState))) (changeMove worldState x-mouse y-mouse)]
+    [(string=? "button-up" mouse-event) (makeMove worldState x-mouse y-mouse)]
     [else worldState]))
 
 
 
-(define (makeMove worldState new-x new-y)
-  (if (currentMove? (worldState-currentMove worldState))
-      (make-worldState (worldState-image worldState)
-                   (worldState-chessboard worldState)
-                   (worldState-bitboards worldState)
-                   #false
-                   (worldState-quit worldState))
-      (make-worldState (worldState-image worldState)
-                   (worldState-chessboard worldState)
-                   (worldState-bitboards worldState)
-                   (worldState-currentMove worldState)
-                   (worldState-quit worldState))))
+
 
 (define initialState (make-worldState
-                        (drawPieces STANDARD_CHESSBOARD 0)
+                        (drawPieces STANDARD_CHESSBOARD)
                         STANDARD_CHESSBOARD
                         BITBOARDS
                         #false
