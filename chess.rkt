@@ -466,36 +466,36 @@
      (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
      (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
 
-(define (whitePawnPromotion ChessboardIndex)
-  (if (equal? RANK_8 ) 
-    (cond
-      ;Promotion to queen 
-      [()(make-WQ ChessboardIndex)]
-      ;Promotion to Knight
-      [()(make-WN ChessboardIndex)]
-      ;Promotion to Rook
-      [()(make-WR ChessboardIndex)]
-      ;Promotion to Bishop
-      [()(make-WB ChessboardIndex)]
-    )
-    (ChessboardIndex)
-  )
-)
-(define (blackPawnPromotion ChessboardIndex)
-  (if (equal? RANK_1 ) 
-    (cond
-      ;Promotion to queen 
-      [()(make-BQ ChessboardIndex)]
-      ;Promotion to Knight
-      [()(make-BN ChessboardIndex)]
-      ;Promotion to Rook
-      [()(make-BR ChessboardIndex)]
-      ;Promotion to Bishop
-      [()(make-BB ChessboardIndex)]
-    )
-    (ChessboardIndex)
-  )
-)
+;(define (whitePawnPromotion ChessboardIndex)
+;  (if (equal? RANK_8 ) 
+;    (cond
+;      ;Promotion to queen 
+;      [()(make-WQ ChessboardIndex)]
+;      ;Promotion to Knight
+;      [()(make-WN ChessboardIndex)]
+;      ;Promotion to Rook
+;      [()(make-WR ChessboardIndex)]
+;      ;Promotion to Bishop
+;      [()(make-WB ChessboardIndex)]
+;    )
+;    (ChessboardIndex)
+;  )
+;)
+;(define (blackPawnPromotion ChessboardIndex)
+;  (if (equal? RANK_1 ) 
+;    (cond
+;      ;Promotion to queen 
+;      [()(make-BQ ChessboardIndex)]
+;      ;Promotion to Knight
+;      [()(make-BN ChessboardIndex)]
+;      ;Promotion to Rook
+;      [()(make-BR ChessboardIndex)]
+;      ;Promotion to Bishop
+;      [()(make-BB ChessboardIndex)]
+;    )
+;    (ChessboardIndex)
+;  )
+;)
 
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
@@ -504,62 +504,44 @@
 
 
 ;; King Safety v2
-; get rooks attacks 
-(define (getRookAttacks-backend rookBitBoard occupied attack_bitboard rook_acc) 
+; get rooks attacks. Takes the bitboard of all rooks of a certain color as input along with the
+; bitboard of occupied pieces, and returns a bitboard with all attacks
+(define (getRookAttacks-backend rb occupied chessboardIndex attacks)
   (cond
-    [(= rook_acc 64) attack_bitboard]
-    [(zero? (bitwise-and rookBitBoard (arithmetic-shift 1 rook_acc))) (getRookAttacks-backend rookBitBoard occupied attack_bitboard (add1 rook_acc)) ]
-    [else
-      (getRookAttacks-backend rookBitBoard occupied  (bitwise-ior (rookMoves occupied rook_acc) attack_bitboard) (add1 rook_acc))
-  ]))
-
-(define (allRookAttacks rb occupied chessboardIndex totalSum)
-  (cond
-    [(equal? 64 chessboardIndex) totalSum]
+    [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift rb (- chessboardIndex 63))))
-     (allRookAttacks rb occupied (add1 chessboardIndex) (bitwise-ior totalSum (rookMoves occupied chessboardIndex)))]
-    [else (allRookAttacks rb occupied (add1 chessboardIndex) totalSum)]))
+     (getRookAttacks-backend rb occupied (add1 chessboardIndex) (bitwise-ior attacks (rookMoves occupied chessboardIndex)))]
+    [else (getRookAttacks-backend rb occupied (add1 chessboardIndex) attacks)]))
     
-  
-      
-
 ; get bishop attacks 
-(define (getBishopAttacks-backend bishopBitBoard occupied attack_bitboard bishop_acc ) 
+(define (getBishopAttacks-backend bb occupied chessboardIndex attacks)
   (cond
-    [(= bishop_acc 64) attack_bitboard]
-    [(zero? (bitwise-and bishopBitBoard (arithmetic-shift 1 bishop_acc))) (getBishopAttacks-backend bishopBitBoard occupied attack_bitboard (add1 bishop_acc)) ]
-    [else
-      (getBishopAttacks-backend bishopBitBoard occupied (bitwise-ior (bishopMoves occupied bishop_acc ) attack_bitboard) (add1 bishop_acc))
-  ]))
-
-; get queen attacks - NOT YET IMPLEMENTED
+    [(equal? 64 chessboardIndex) attacks]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift bb (- chessboardIndex 63))))
+     (getBishopAttacks-backend bb occupied (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves occupied chessboardIndex)))]
+    [else (getBishopAttacks-backend bb occupied (add1 chessboardIndex) attacks)]))
 
 ; get knight attacks
-(define (getKnightAttacks-backend knightBitBoard occupied attack_bitboard knight_acc )
+(define (getKnightAttacks-backend nb occupied chessboardIndex attacks)
   (cond
-    [(= knight_acc 64) attack_bitboard]
-    [(zero? (bitwise-and knightBitBoard (arithmetic-shift 1 knight_acc))) (getKnightAttacks-backend knightBitBoard occupied attack_bitboard (add1 knight_acc))]
-    [else
-      (getKnightAttacks-backend knightBitBoard occupied (bitwise-ior (knightMoves knight_acc) attack_bitboard) (add1 knight_acc))
-    ]))
+    [(equal? 64 chessboardIndex) attacks]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift nb (- chessboardIndex 63))))
+     (getKnightAttacks-backend nb occupied (add1 chessboardIndex) (bitwise-ior attacks (knightMoves occupied chessboardIndex)))]
+    [else (getBishopAttacks-backend nb occupied (add1 chessboardIndex) attacks)]))
 
 ; get black pawn attacks
-(define (getBlackPawnAttacks-backend pawnBitBoard occupied attack_bitboard pawn_acc )
+(define (getBPawnAttacks-backend pb occupied chessboardIndex attacks)
   (cond
-    [(= pawn_acc 64) attack_bitboard]
-    [(zero? (bitwise-and pawnBitBoard (arithmetic-shift 1 pawn_acc))) (getBlackPawnAttacks-backend pawnBitBoard occupied attack_bitboard (add1 pawn_acc))]
-    [else
-      (getBlackPawnAttacks-backend pawnBitBoard occupied (bitwise-ior (blackPawnAttacks pawn_acc) attack_bitboard) (add1 pawn_acc))
-    ])
-    )
+    [(equal? 64 chessboardIndex) attacks]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift pb (- chessboardIndex 63))))
+     (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (blackPawnAttacks chessboardIndex)))]
+    [else (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
 
-;; USE THESE FUNCTIONS
-; - rook attacks frontend
+; - bishop attacks frontend
 ; Get a bitboard with the combined attacks of all rooks in a bitboard
 (define (getRookAttacks rookBitBoard occupied)
   (getRookAttacks-backend rookBitBoard occupied 0 0))
 
-; - bishop attacks frontend
 ; Get a bitboard with the combined attacks of all bishops in a bitboard
 (define (getBishopAttacks bishopBitBoard occupied)
   (getBishopAttacks-backend bishopBitBoard occupied 0 0))
@@ -570,15 +552,15 @@
   (getKnightAttacks-backend knightBitBoard occupied 0 0))
 
 ; - black pawn attacks frontend
-(define (getBlackPawnAttacks pawnBitBoard occupied)
-  (getBlackPawnAttacks-backend pawnBitBoard occupied 0 0))
+(define (getBPawnAttacks pawnBitBoard occupied)
+  (getBPawnAttacks-backend pawnBitBoard occupied 0 0))
 
 
 (define (getBlackAttacks BR BB BN BP occupied)
-  (bitwise-ior (bitwise-ior (getRookAttacks      BR occupied) 
-                            (getBishopAttacks    BB occupied)) 
-               (bitwise-ior (getKnightAttacks    BN occupied) 
-                            (getBlackPawnAttacks BP occupied)) )) ; add king and queen later
+  (bitwise-ior (bitwise-ior (getRookAttacks   BR occupied) 
+                            (getBishopAttacks BB occupied)) 
+               (bitwise-ior (getKnightAttacks BN occupied) 
+                            (getBPawnAttacks  BP occupied)) )) ; add king and queen later
 
 (define (isWhiteKingSafe WK BP BR BB BN BQ BK occupied)
   (local [(define blackAttacks (getBlackAttacks BR BB BN BP occupied))] ; TODO: add king and queen later
@@ -590,7 +572,7 @@
 
 
 (define WK-test #b0000000000000000000000000001000000000000000000000000000000000000)
-(define BR-test #b0010010000000000000000000000000000000000000000000000000000000000)
+(define BR-test #b0001010000000000000000000000000000000000000000000000000000000000)
 (define testboard (bitwise-ior WK-test BR-test))
 
 "LA BITBOARD DEL RE BIANCO"
@@ -605,11 +587,11 @@
 (define TEST-OCCUPIED
   (bitboardsXOR TEST-BITBOARDS 0))
 
-"BITBOARD DEGLI ATTACCHI DELLE TORRI"
+""
+"ATTACCO TORRI"
 (printBitboard (getRookAttacks BR-test TEST-OCCUPIED))
-;(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0 TEST-OCCUPIED) ; NOT WORKING
 
-;(printBitboard (rookMoves (bitboardsXOR (bitboardsToChessboard testboard) 0) 2))
+(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0 TEST-OCCUPIED)
 
 
 
