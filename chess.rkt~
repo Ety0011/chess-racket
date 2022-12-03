@@ -10,8 +10,6 @@
 (define WHITE #true)
 (define BLACK #false)
 
-
-; The color of the dark and the light squares ot the chessboard
 (define SQUARE_SIDE 100)
 (define DARK_WOOD (make-color 191 108 58))
 (define LIGHT_WOOD (make-color 238 202 160))
@@ -34,8 +32,6 @@
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)))
 
 ;; Costants
-
-;  The different images of the pieces
 (define WK_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WK.png")))
 (define WQ_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WQ.png")))
 (define WR_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WR.png")))
@@ -49,12 +45,6 @@
 (define BN_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BN.png")))
 (define BP_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BP.png")))
 
-
-;; Data type
-;  A chessboard is an image made of vectors
-;  Interpretation: The chessboard contain the different pieces
-
-; An empty chessboard is a vector made from 64 empty squares.
 (define EMTPY_CHESSBOARD
   (vector
    (vector " " " " " " " " " " " " " " " ")
@@ -66,10 +56,6 @@
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
-
-
-;  A standart chessboard contain the following pieces in these position.
-; Interpretation: For example the rooks "R" are on the corners as the starting position in a standart game 
 (define STANDARD_CHESSBOARD
   (vector
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
@@ -98,12 +84,12 @@
 (define (chessboardSet matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
-(define (drawPieces2 chessboard ChessboardIndex)
+(define (drawPieces chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
        (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
      (define (drawPiece pieceIMG ChessboardIndex)
-       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (drawPieces2 chessboard (add1 ChessboardIndex))))) 
+       (place-image pieceIMG (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo ChessboardIndex 8))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ ChessboardIndex 8)))) (drawPieces chessboard (add1 ChessboardIndex))))) 
     (if (equal? 64 ChessboardIndex) BACKGROUND
         (cond
           [(equal? "K" (getPiece chessboard ChessboardIndex))
@@ -131,12 +117,7 @@
           [(equal? "p" (getPiece chessboard ChessboardIndex))
            (drawPiece BP_IMG ChessboardIndex)]
           [(equal? " " (getPiece chessboard ChessboardIndex))
-           (drawPieces2 chessboard (add1 ChessboardIndex))]))))
-
-
-
-(define (drawPieces chessboard)
-  (drawPieces2 chessboard 0))
+           (drawPieces chessboard (add1 ChessboardIndex))]))))
 
 (define WK #b0000000000000000000000000000000000000000000000000000000000000000)
 (define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
@@ -151,22 +132,16 @@
 (define BN #b0000000000000000000000000000000000000000000000000000000000000000)
 (define BP #b0000000000000000000000000000000000000000000000000000000000000000)
 
-
-;; Data type
-;  Bitboars are vectors
-;  Interpretation: a structure of array of bits based on the position of a piece in a board cell. 
-;  The name are based on the type of piece and on its color. "WK" is the white king
-
 (define BITBOARDS
   (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
 
-(define (chessboardToBitboards2 chessboard ChessboardIndex)
+(define (chessboardToBitboards chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
        (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
      (define (writeBitBoard bitboard ChessboardIndex)
        (begin (vector-set! BITBOARDS bitboard (+ (vector-ref BITBOARDS bitboard) (arithmetic-shift 1 (- 63 ChessboardIndex)))))
-       (begin (chessboardToBitboards2 chessboard (add1 ChessboardIndex)))))
+       (begin (chessboardToBitboards chessboard (add1 ChessboardIndex)))))
     (if (equal? 64 ChessboardIndex) BITBOARDS
         (cond
           [(equal? "K" (getPiece chessboard ChessboardIndex))
@@ -194,18 +169,15 @@
           [(equal? "p" (getPiece chessboard ChessboardIndex))
            (writeBitBoard 11 ChessboardIndex)]
           [(equal? " " (getPiece chessboard ChessboardIndex))
-           (chessboardToBitboards2 chessboard (add1 ChessboardIndex))]))))
+           (chessboardToBitboards chessboard (add1 ChessboardIndex))]))))
 
-(define (chessboardToBitboards chessboard)
-  (chessboardToBitboards2 chessboard 0))
-
-(define (bitboardsToChessboard2 chessboard ChessboardIndex)
+(define (bitboardsToChessboard chessboard ChessboardIndex)
   (local
     ((define (getBit bitboard ChessboardIndex)
        (bitwise-and 1 (arithmetic-shift (vector-ref BITBOARDS bitboard) (- ChessboardIndex 63))))
      (define (writeChessBoard chessboard ChessboardIndex value)
        (begin (chessboardSet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8) value))
-       (begin (bitboardsToChessboard2 chessboard (add1 ChessboardIndex)))))
+       (begin (bitboardsToChessboard chessboard (add1 ChessboardIndex)))))
     (if (equal? 64 ChessboardIndex) chessboard
         (cond
           [(equal? 1 (getBit 0 ChessboardIndex))
@@ -235,11 +207,8 @@
           [else
            (writeChessBoard chessboard ChessboardIndex " ")]))))
 
-(define (bitboardsToChessboard chessboard)
-  (bitboardsToChessboard2 chessboard 0))
-
-(chessboardToBitboards STANDARD_CHESSBOARD)
-(bitboardsToChessboard STANDARD_CHESSBOARD)
+(chessboardToBitboards STANDARD_CHESSBOARD 0)
+(bitboardsToChessboard STANDARD_CHESSBOARD 0)
 
 
 (define (printBitboard2 bitboard ChessboardIndex)
@@ -407,30 +376,31 @@
    #b0000000000000000000000000000000000000000000000000000000010000000))
 
 
-(define (rookMoves occupied ChessboardIndex)
+(define (rookMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
     (define horizontalMoves
-      (bitwise-xor (- occupied (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary occupied) (* 2 (reverseBinary binaryPosition))))))
+      (bitwise-xor (- OCCUPIED (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary OCCUPIED) (* 2 (reverseBinary binaryPosition))))))
     (define verticalMoves
-      (bitwise-xor (- (bitwise-and occupied (vector-ref FILEMASKS (modulo ChessboardIndex 8))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref FILEMASKS (modulo ChessboardIndex 8)))) (* 2 (reverseBinary binaryPosition)))))))
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo ChessboardIndex 8))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref FILEMASKS (modulo ChessboardIndex 8)))) (* 2 (reverseBinary binaryPosition)))))))
     (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ ChessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo ChessboardIndex 8))))))
 
 
-(define (bishopMoves occupied ChessboardIndex)
+(define (bishopMoves ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
     (define DiagonalMoves
-      (bitwise-xor (- (bitwise-and occupied (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8))))) (* 2 (reverseBinary binaryPosition))))))
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8))))) (* 2 (reverseBinary binaryPosition))))))
     (define AntiDiagonalMoves
-      (bitwise-xor (- (bitwise-and occupied (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition)))))))
+      (bitwise-xor (- (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and OCCUPIED (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition)))))))
     (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))))))
+
 
 
 (define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
@@ -489,14 +459,6 @@
      (bitwise-and (arithmetic-shift binaryPosition 8) NOT_OCCUPIED NOT_RANK_8)
      (bitwise-and (arithmetic-shift binaryPosition 16) (arithmetic-shift NOT_OCCUPIED 8) NOT_OCCUPIED RANK_4))))
 
-(define (whitePawnAttacks ChessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8))))
-
 (define (blackPawnMoves ChessboardIndex)
   (local
     ((define binaryPosition
@@ -506,14 +468,6 @@
      (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1)
      (bitwise-and (arithmetic-shift binaryPosition -8) NOT_OCCUPIED NOT_RANK_1)
      (bitwise-and (arithmetic-shift binaryPosition -16) (arithmetic-shift NOT_OCCUPIED -8) NOT_OCCUPIED RANK_5))))
-
-(define (blackPawnAttacks ChessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
 
      
 
@@ -544,11 +498,14 @@
   (if (not (zero? (bitwise-and kingBitBoard enemyAttacks))) #t
       #f))
 
-
 (define enemyRook #b0000000000000000000000010000000000000000000000000000000000000000)
 (define rookAttacks (rookMoves 23))
 (define testKing  #b0000000000000000000010000000000000000000000000000000000000000000)
 (isKingChecked testKing rookAttacks)
+
+
+;; King Safety v2
+; When performing a move, get the bitboard of the chessboard 
 
 
 
@@ -593,16 +550,11 @@
 
 
 (define (startMove worldState new-x new-y)
-  (make-worldState (hideSelectedPiece worldState new-x new-y)
+  (make-worldState (worldState-image worldState)
                    (worldState-chessboard worldState)
                    (worldState-bitboards worldState)
                    (newCurrentMove worldState new-x new-y)
                    (worldState-quit worldState)))
-
-(define (hideSelectedPiece worldState new-x new-y)
-  (if (equal? 0 (modulo (+ (floor (/ new-y SQUARE_SIDE)) (floor (/ new-x SQUARE_SIDE))) 2))
-      (place-image LIGHT_SQUARE (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-x SQUARE_SIDE)))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-y SQUARE_SIDE)))) (worldState-image worldState))
-      (place-image DARK_SQUARE (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-x SQUARE_SIDE)))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ new-y SQUARE_SIDE)))) (worldState-image worldState))))
 
 (define (newCurrentMove worldState new-x new-y)
   (local
@@ -647,18 +599,7 @@
                                      (make-posn new-x new-y))
                    (worldState-quit worldState)))
 
-(define (makeMove worldState new-x new-y)
-  (if (currentMove? (worldState-currentMove worldState))
-      (make-worldState (drawPieces (worldState-chessboard worldState))
-                       (worldState-chessboard worldState)
-                       (worldState-bitboards worldState)
-                       #false
-                       (worldState-quit worldState))
-      (make-worldState (worldState-image worldState)
-                   (worldState-chessboard worldState)
-                   (worldState-bitboards worldState)
-                   (worldState-currentMove worldState)
-                   (worldState-quit worldState))))
+
 
 (define (quit worldState)
   (make-worldState (worldState-image worldState)
@@ -682,15 +623,25 @@
     [(string=? "button-down" mouse-event) (startMove worldState x-mouse y-mouse)]
     [(and (string=? "drag" mouse-event)
           (currentMove? (worldState-currentMove worldState))) (changeMove worldState x-mouse y-mouse)]
-    [(string=? "button-up" mouse-event) (makeMove worldState x-mouse y-mouse)]
     [else worldState]))
 
 
 
-
+(define (makeMove worldState new-x new-y)
+  (if (currentMove? (worldState-currentMove worldState))
+      (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   #false
+                   (worldState-quit worldState))
+      (make-worldState (worldState-image worldState)
+                   (worldState-chessboard worldState)
+                   (worldState-bitboards worldState)
+                   (worldState-currentMove worldState)
+                   (worldState-quit worldState))))
 
 (define initialState (make-worldState
-                        (drawPieces STANDARD_CHESSBOARD)
+                        (drawPieces STANDARD_CHESSBOARD 0)
                         STANDARD_CHESSBOARD
                         BITBOARDS
                         #false
