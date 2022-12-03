@@ -612,17 +612,30 @@
 
 ; testino
 
+; testino
+
+
 (define WK-test #b0000000000000000000000000001000000000000000000000000000000000000)
 (define BR-test #b0010010000000000000000000000000000000000000000000000000000000000)
 (define testboard (bitwise-ior WK-test BR-test))
-;(printBitboard WK-test)
-""
-;(printBitboard BR-test)
-""
-;(printBitboard (getRookAttacks BR-test))
-;(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0) ; NOT WORKING
 
-(printBitboard (rookMoves OCCUPIED 2))
+"LA BITBOARD DEL RE BIANCO"
+(printBitboard WK-test)
+""
+"LA BITBOARD DELLE TORRI NERE"
+(printBitboard BR-test)
+
+(define TEST-BITBOARDS
+  (vector WK-test 0 0 0 0 0 0 0 BR-test 0 0 0))
+
+(define TEST-OCCUPIED
+  (bitboardsXOR TEST-BITBOARDS 0))
+
+"BITBOARD DEGLI ATTACCHI DELLE TORRI"
+(printBitboard (getRookAttacks BR-test TEST-OCCUPIED))
+;(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0 TEST-OCCUPIED) ; NOT WORKING
+
+;(printBitboard (rookMoves (bitboardsXOR (bitboardsToChessboard testboard) 0) 2))
 
 
 
