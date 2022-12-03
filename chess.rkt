@@ -239,6 +239,7 @@
   (bitboardsToChessboard2 chessboard 0))
 
 (chessboardToBitboards STANDARD_CHESSBOARD)
+(bitboardsToChessboard STANDARD_CHESSBOARD)
 
 
 (define (printBitboard2 bitboard ChessboardIndex)
