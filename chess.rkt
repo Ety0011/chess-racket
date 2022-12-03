@@ -61,7 +61,7 @@
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
    (vector "p" "p" "p" "p" " " "p" "p" "p")
    (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " "p" "P" " " " ")
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")
    (vector "P" "P" "P" "P" "P" " " "P" "P")
@@ -517,76 +517,17 @@
 
 
 
-;; King Safety v2
-; get rooks attacks 
-(define (getRookAttacks-backend rookBitBoard  attack_bitboard rook_acc) 
-  (cond
-    [(= rook_acc 64) attack_bitboard]
-    [(zero? (bitwise-and rookBitBoard (arithmetic-shift 1 rook_acc))) (getRookAttacks rookBitBoard-backend  attack_bitboard (add1 rook_acc)) ]
-    [else
-      (getRookAttacks-backend rookBitBoard  (bitwise-ior (rookMoves rook_acc ) attack_bitboard) (add1 rook_acc))
-  ]))
+;;; TEST ;;;
+(define (isKingChecked kingBitBoard enemyAttacks)
+  (if (not (zero? (bitwise-and kingBitBoard enemyAttacks))) #t
+      #f))
 
-; get bishop attacks 
-(define (getBishopAttacks-backend bishopBitBoard attack_bitboard bishop_acc ) 
-  (cond
-    [(= bishop_acc 64) attack_bitboard]
-    [(zero? (bitwise-and bishopBitBoard (arithmetic-shift 1 bishop_acc))) (getBishopAttacks-backend bishopBitBoard attack_bitboard (add1 bishop_acc)) ]
-    [else
-      (getBishopAttacks-backend bishopBitBoard  (bitwise-ior (bishopMoves bishop_acc ) attack_bitboard) (add1 bishop_acc))
-  ]))
 
-; get queen attacks - NOT YET IMPLEMENTED
+(define enemyRook #b0000000000000000000000010000000000000000000000000000000000000000)
+(define rookAttacks (rookMoves 23))
+(define testKing  #b0000000000000000000010000000000000000000000000000000000000000000)
+(isKingChecked testKing rookAttacks)
 
-; get knight attacks
-(define (getKnightAttacks-backend knightBitBoard attack_bitboard knight_acc )
-  (cond
-    [(= knight_acc 64) attack_bitboard]
-    [(zero? (bitwise-and knightBitBoard (arithmetic-shift 1 knight_acc))) (getKnightAttacks-backend knightBitBoard attack_bitboard (add1 knight_acc))]
-    [else
-      (getKnightAttacks-backend knightBitBoard (bitwise-ior (knightMoves knight_acc) attack_bitboard) (add1 knight_acc))
-    ]))
-
-; get black pawn attacks
-(define (getBlackPawnAttacks-backend pawnBitBoard attack_bitboard pawn_acc )
-  (cond
-    [(= pawn_acc 64) attack_bitboard]
-    [(zero? (bitwise-and pawnBitBoard (arithmetic-shift 1 pawn_acc))) (getBlackPawnAttacks-backend pawnBitBoard attack_bitboard (add1 pawn_acc))]
-    [else
-      (getBlackPawnAttacks-backend pawnBitBoard (bitwise-ior ()))
-    ]))
-
-;; USE THESE FUNCTIONS
-; - rook attacks frontend
-; Get a bitboard with the combined attacks of all rooks in a bitboard
-(define (getRookAttacks rookBitBoard)
-  (getRookAttacks-backend rookBitBoard 0 0))
-
-; - bishop attacks frontend
-; Get a bitboard with the combined attacks of all bishops in a bitboard
-(define (getBishopAttacks bishopBitBoard)
-  (getBishopAttacks-backend bishopBitBoard 0 0))
-
-; - knight attacks frontend
-; Get a bitboard with the combined attacks of all knights in a bitboard
-(define (getKnightAttacks knightBitBoard)
-  (getKnightAttacks-backend knightBitBoard 0 0))
-
-; - black pawn attacks frontend
-; Get a biboard with the combined attacks of all white pawns
-(define (getBlackPawnAttacks pawnBitBoard)
-  (getBlackPawnAttacks-backend pawnBitBoard 0 0))
-
-(define (getBlackAttacks BR BB BN BP)
-  (bitwise-ior (bitwise-ior (getRookAttacks      BR) 
-                            (getBishopAttacks    BB)) 
-               (bitwise-ior (getKnightAttacks    BN) 
-                            (getBkackPawnAttacks BP)) )) ; add king and queen later
-
-(define (isWhiteKingSafe WK BP BR BB BN BQ BK )
-  (local [(define blackAttacks (bitwise-ior (getRookAttacks BR) (getBishopAttacks BB)))] ; aggiungi le altre...
-    (if (zero? (biwise-and WK blackAttacks)) #t 
-        #f)))
 
 
 
@@ -740,7 +681,7 @@
     [on-key handle-key]
     [stop-when quit?]))
 
-;(drawing-app initialState)
+(drawing-app initialState)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -752,5 +693,3 @@
 ;          (line2D? (appstate-current_line appstate))) (move-end appstate x-mouse y-mouse)]
 ;    [(string=? "button-up" mouse-event) (add-line-to-canvas appstate)]
 ;    [else appstate]))
-
-
