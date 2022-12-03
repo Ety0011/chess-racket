@@ -385,7 +385,7 @@
    #b0000000000000000000000000000000000000000000000000000000010000000))
 
 
-(define (rookMoves2 occupied ChessboardIndex)
+(define (rookMoves occupied ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
@@ -397,10 +397,8 @@
                    (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref FILEMASKS (modulo ChessboardIndex 8)))) (* 2 (reverseBinary binaryPosition)))))))
     (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ ChessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo ChessboardIndex 8))))))
 
-(define (rookMoves occupied)
-  (rookMoves2 occupied 0))
 
-(define (bishopMoves2 occupied ChessboardIndex)
+(define (bishopMoves occupied ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
@@ -411,9 +409,6 @@
       (bitwise-xor (- (bitwise-and occupied (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))) (* 2 binaryPosition))
                    (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition)))))))
     (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))))))
-
-(define (bishopMoves occupied)
-  (bishopMoves2 occupied 0))
 
 
 (define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
