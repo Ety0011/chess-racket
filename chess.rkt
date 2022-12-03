@@ -238,8 +238,7 @@
 (define (bitboardsToChessboard chessboard)
   (bitboardsToChessboard2 chessboard 0))
 
-
-(bitboardsToChessboard STANDARD_CHESSBOARD)
+(chessboardToBitboards STANDARD_CHESSBOARD)
 
 
 (define (printBitboard2 bitboard ChessboardIndex)
@@ -785,5 +784,3 @@
 ;    [(string=? "button-up" mouse-event) (add-line-to-canvas appstate)]
 ;    [else appstate]))
 
-
-(printBitboard (chessboardToBitboards STANDARD_CHESSBOARD))
