@@ -10,6 +10,8 @@
 (define WHITE #true)
 (define BLACK #false)
 
+
+; The color of the dark and the light squares ot the chessboard
 (define SQUARE_SIDE 100)
 (define DARK_WOOD (make-color 191 108 58))
 (define LIGHT_WOOD (make-color 238 202 160))
@@ -32,6 +34,8 @@
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)))
 
 ;; Costants
+
+;  The different images of the pieces
 (define WK_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WK.png")))
 (define WQ_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WQ.png")))
 (define WR_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WR.png")))
@@ -45,6 +49,12 @@
 (define BN_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BN.png")))
 (define BP_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BP.png")))
 
+
+;; Data type
+;  A chessboard is an image made of vectors
+;  Interpretation: The chessboard contain the different pieces
+
+; An empty chessboard is a vector made from 64 empty squares.
 (define EMTPY_CHESSBOARD
   (vector
    (vector " " " " " " " " " " " " " " " ")
@@ -56,6 +66,10 @@
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
+
+
+;  A standart chessboard contain the following pieces in these position.
+; Interpretation: For example the rooks "R" are on the corners as the starting position in a standart game 
 (define STANDARD_CHESSBOARD
   (vector
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
@@ -119,6 +133,8 @@
           [(equal? " " (getPiece chessboard ChessboardIndex))
            (drawPieces2 chessboard (add1 ChessboardIndex))]))))
 
+
+
 (define (drawPieces chessboard)
   (drawPieces2 chessboard 0))
 
@@ -134,6 +150,12 @@
 (define BB #b0000000000000000000000000000000000000000000000000000000000000000)
 (define BN #b0000000000000000000000000000000000000000000000000000000000000000)
 (define BP #b0000000000000000000000000000000000000000000000000000000000000000)
+
+
+;; Data type
+;  Bitboars are vectors
+;  Interpretation: a structure of array of bits based on the position of a piece in a board cell. 
+;  The name are based on the type of piece and on its color. "WK" is the white king
 
 (define BITBOARDS
   (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
