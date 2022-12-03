@@ -238,7 +238,7 @@
 (define (bitboardsToChessboard chessboard)
   (bitboardsToChessboard2 chessboard 0))
 
-(chessboardToBitboards STANDARD_CHESSBOARD)
+
 (bitboardsToChessboard STANDARD_CHESSBOARD)
 
 
@@ -594,6 +594,10 @@
 (define (getKnightAttacks knightBitBoard)
   (getKnightAttacks-backend knightBitBoard 0 0))
 
+; - black pawn attacks frontend
+(define (getBlackPawnAttacks pawnBitBoard)
+  (getBlackPawnAttacks-backend pawnBitBoard 0 0))
+
 
 (define (getBlackAttacks BR BB BN BP)
   (bitwise-ior (bitwise-ior (getRookAttacks      BR) 
@@ -611,6 +615,7 @@
 
 (define WK-test #b0000000000000000000000000001000000000000000000000000000000000000)
 (define BR-test #b0010010000000000000000000000000000000000000000000000000000000000)
+(define testboard (bitwise-ior WK-test BR-test))
 ;(printBitboard WK-test)
 ""
 ;(printBitboard BR-test)
@@ -618,7 +623,7 @@
 ;(printBitboard (getRookAttacks BR-test))
 ;(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0) ; NOT WORKING
 
-(printBitboard (rookMoves 2))
+(printBitboard (rookMoves (bitboardsXOR (bitboardsToChessboard testboard) 0) 2))
 
 
 
@@ -779,3 +784,6 @@
 ;          (line2D? (appstate-current_line appstate))) (move-end appstate x-mouse y-mouse)]
 ;    [(string=? "button-up" mouse-event) (add-line-to-canvas appstate)]
 ;    [else appstate]))
+
+
+(printBitboard (chessboardToBitboards STANDARD_CHESSBOARD))
