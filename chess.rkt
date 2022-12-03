@@ -527,9 +527,9 @@
 (define (getRookAttacks-backend rookBitBoard  attack_bitboard rook_acc) 
   (cond
     [(= rook_acc 64) attack_bitboard]
-    [(zero? (bitwise-and rookBitBoard (arithmetic-shift 1 rook_acc))) (getRookAttacks rookBitBoard-backend  attack_bitboard (add1 rook_acc)) ]
+    [(zero? (bitwise-and rookBitBoard (arithmetic-shift 1 rook_acc))) (getRookAttacks-backend rookBitBoard attack_bitboard (add1 rook_acc)) ]
     [else
-      (getRookAttacks-backend rookBitBoard  (bitwise-ior (rookMoves rook_acc ) attack_bitboard) (add1 rook_acc))
+      (getRookAttacks-backend rookBitBoard  (bitwise-ior (rookMoves rook_acc) attack_bitboard) (add1 rook_acc))
   ]))
 
 ; get bishop attacks 
@@ -558,7 +558,7 @@
     [(= pawn_acc 64) attack_bitboard]
     [(zero? (bitwise-and pawnBitBoard (arithmetic-shift 1 pawn_acc))) (getBlackPawnAttacks-backend pawnBitBoard attack_bitboard (add1 pawn_acc))]
     [else
-      (getBlackPawnAttacks-backend pawnBitBoard (bitwise-ior ()))
+      (getBlackPawnAttacks-backend pawnBitBoard (bitwise-ior (blackPawnAttacks pawn_acc) attack_bitboard) (add1 pawn_acc))
     ]))
 
 ;; USE THESE FUNCTIONS
@@ -586,17 +586,26 @@
   (bitwise-ior (bitwise-ior (getRookAttacks      BR) 
                             (getBishopAttacks    BB)) 
                (bitwise-ior (getKnightAttacks    BN) 
-                            (getBkackPawnAttacks BP)) )) ; add king and queen later
+                            (getBlackPawnAttacks BP)) )) ; add king and queen later
 
 (define (isWhiteKingSafe WK BP BR BB BN BQ BK )
-  (local [(define blackAttacks (bitwise-ior (getRookAttacks BR) (getBishopAttacks BB)))] ; aggiungi le altre...
-    (if (zero? (biwise-and WK blackAttacks)) #t 
+  (local [(define blackAttacks (getBlackAttacks BR BB BN BP))] ; TODO: add king and queen later
+    (if (zero? (bitwise-and WK blackAttacks)) #t 
         #f)))
 
 
+; testino
 
+(define WK-test #b0000000000000000000000000001000000000000000000000000000000000000)
+(define BR-test #b0010010000000000000000000000000000000000000000000000000000000000)
+;(printBitboard WK-test)
+""
+;(printBitboard BR-test)
+""
+;(printBitboard (getRookAttacks BR-test))
+;(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0) ; NOT WORKING
 
-
+(printBitboard (rookMoves 2))
 
 
 
