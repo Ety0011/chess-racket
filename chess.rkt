@@ -470,13 +470,13 @@
   (if (equal? RANK_8 ) 
     (cond
       ;Promotion to queen 
-      [()(make-WQ)]
+      [()(make-WQ ChessboardIndex)]
       ;Promotion to Knight
-      [()(make-WN)]
+      [()(make-WN ChessboardIndex)]
       ;Promotion to Rook
-      [()(make-WR)]
+      [()(make-WR ChessboardIndex)]
       ;Promotion to Bishop
-      [()(make-WB)]
+      [()(make-WB ChessboardIndex)]
     )
     (ChessboardIndex)
   )
@@ -485,13 +485,13 @@
   (if (equal? RANK_1 ) 
     (cond
       ;Promotion to queen 
-      [()(make-BQ)]
+      [()(make-BQ ChessboardIndex)]
       ;Promotion to Knight
-      [()(make-BN)]
+      [()(make-BN ChessboardIndex)]
       ;Promotion to Rook
-      [()(make-BR)]
+      [()(make-BR ChessboardIndex)]
       ;Promotion to Bishop
-      [()(make-BB)]
+      [()(make-BB ChessboardIndex)]
     )
     (ChessboardIndex)
   )
