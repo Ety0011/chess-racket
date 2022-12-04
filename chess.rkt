@@ -93,9 +93,23 @@
    (vector " " " " " " " " "p" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
+
+
+
+;; Data type
+;  chessboardGet is a matrix
+;  Interpretation: use the rows and the columns of the vectors CHESSBOARD
+
 (define (chessboardGet matrix row col)
   (vector-ref (vector-ref matrix row) col))
 
+
+
+;; Data type
+;  chessboardSet is a matrix
+;  Interpretation: assign a value to the rows and the colums of the matrix,
+;  update the slot "col" of (vector-ref matrix row) to contain a "value"
+;  Assign the value, usually a string, to the row and column, usually number of the matrix  ;  EMPTY_CHESSBOARD
 (define (chessboardSet matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
@@ -134,6 +148,12 @@
           [(equal? " " (getPiece chessboard ChessboardIndex))
            (drawPieces2 chessboard (add1 ChessboardIndex))]))))
 
+
+
+
+;; Data type
+;  DrawPieces2 is an image
+;  Interpretation: it overlay the images of the pieces over the matrix chessboard
 (define (drawPieces chessboard)
   (drawPieces2 chessboard 0))
 
