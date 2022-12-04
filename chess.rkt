@@ -537,6 +537,14 @@
      (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (blackPawnAttacks chessboardIndex)))]
     [else (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
 
+; get white pawn attacks
+(define (getWPawnAttacks-backend pb occupied chessboardIndex attacks)
+  (cond
+    [(equal? 64 chessboardIndex) attacks]
+    [(equal? 1 (bitwise-and 1 (arithmetic-shift pb (- chessboardIndex 63))))
+     (getWPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (whitePawnAttacks chessboardIndex)))]
+    [else (getWPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
+
 ; - bishop attacks frontend
 ; Get a bitboard with the combined attacks of all rooks in a bitboard
 (define (getRookAttacks rookBitBoard occupied)
@@ -555,47 +563,31 @@
 (define (getBPawnAttacks pawnBitBoard occupied)
   (getBPawnAttacks-backend pawnBitBoard occupied 0 0))
 
+; - white pawn attacks frontend
+(define (getWPawnAttacks pawnBitBoard occupied)
+  (getWPawnAttacks-backend pawnBitBoard occupied 0 0))
 
 (define (getBlackAttacks BR BB BN BP occupied)
   (bitwise-ior (bitwise-ior (getRookAttacks   BR occupied) 
                             (getBishopAttacks BB occupied)) 
                (bitwise-ior (getKnightAttacks BN occupied) 
-                            (getBPawnAttacks  BP occupied)) )) ; add king and queen later
+                            (getBPawnAttacks  BP occupied)))) ; add king and queen later
+
+(define (getWhiteAttacks WR WB WN WP occupied)
+  (bitwise-ior (bitwise-ior (getRookAttacks   WR occupied)
+                            (getBishopAttacks WB occupied))
+               (bitwise-ior (getKnightAttacks WN occupied)
+                            (getWPawnAttacks  WP occupied)))) ; add king and queen later
 
 (define (isWhiteKingSafe WK BP BR BB BN BQ BK occupied)
   (local [(define blackAttacks (getBlackAttacks BR BB BN BP occupied))] ; TODO: add king and queen later
     (if (zero? (bitwise-and WK blackAttacks)) #t 
         #f)))
 
-
-; testino
-
-
-(define WK-test #b0000000000000000000000000001000000000000000000000000000000000000)
-(define BR-test #b0001010000000000000000000000000000000000000000000000000000000000)
-(define testboard (bitwise-ior WK-test BR-test))
-
-"LA BITBOARD DEL RE BIANCO"
-(printBitboard WK-test)
-""
-"LA BITBOARD DELLE TORRI NERE"
-(printBitboard BR-test)
-
-(define TEST-BITBOARDS
-  (vector WK-test 0 0 0 0 0 0 0 BR-test 0 0 0))
-
-(define TEST-OCCUPIED
-  (bitboardsXOR TEST-BITBOARDS 0))
-
-""
-"ATTACCO TORRI"
-(printBitboard (getRookAttacks BR-test TEST-OCCUPIED))
-
-(isWhiteKingSafe WK-test 0 BR-test 0 0 0 0 TEST-OCCUPIED)
-
-
-
-; LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL
+(define (isBlackKingSafe BK WP WR WB WN WQ WK occupied)
+  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP occupied))] ; TODO: add king and queen later
+    (if (zero? (bitwise-and BK whiteAttacks)) #t
+        #f))) 
 
 
 
