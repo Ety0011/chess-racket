@@ -10,6 +10,9 @@
 (define WHITE #true)
 (define BLACK #false)
 
+
+
+; The color of the dark and the light squares ot the chessboard
 (define SQUARE_SIDE 100)
 (define DARK_WOOD (make-color 191 108 58))
 (define LIGHT_WOOD (make-color 238 202 160))
@@ -32,6 +35,9 @@
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)))
 
 ;; Costants
+
+
+;  The different images of the pieces
 (define WK_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WK.png")))
 (define WQ_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WQ.png")))
 (define WR_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WR.png")))
@@ -45,6 +51,13 @@
 (define BN_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BN.png")))
 (define BP_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BP.png")))
 
+
+
+;; Data type
+;  A chessboard is an image made of vectors
+;  Interpretation: The chessboard contain the different pieces
+
+; An empty chessboard is a vector made from 64 empty squares.
 (define EMTPY_CHESSBOARD
   (vector
    (vector " " " " " " " " " " " " " " " ")
@@ -56,6 +69,10 @@
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
+
+
+;  A standart chessboard contain the following pieces in these position.
+; Interpretation: For example the rooks "R" are on the corners as the starting position in a standart game 
 (define STANDARD_CHESSBOARD
   (vector
    (vector "r" "n" "b" "q" "k" "b" "n" "r")
@@ -78,12 +95,31 @@
    (vector " " " " " " " " "p" " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
+
+
+
+
+;; Data type
+;  chessboardGet is a matrix
+;  Interpretation: use the rows and the columns of the vectors CHESSBOARD
 (define (chessboardGet matrix row col)
   (vector-ref (vector-ref matrix row) col))
 
+
+
+;; Data type
+;  chessboardSet is a matrix
+;  Interpretation: assign a value to the rows and the colums of the matrix,
+;  update the slot "col" of (vector-ref matrix row) to contain a "value"
+;  Assign the value, usually a string, to the row and column, usually number of the matrix  ;  EMPTY_CHESSBOARD
 (define (chessboardSet matrix row col value)
   (vector-set! (vector-ref matrix row) col value))
 
+
+
+;; Data type
+;  DrawPieces is an image
+;  Interpretation: it overlay the images of the pieces over the matrix chessboard
 (define (drawPieces chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
@@ -132,10 +168,20 @@
 (define BN #b0000000000000000000000000000000000000000000000000000000000000000)
 (define BP #b0000000000000000000000000000000000000000000000000000000000000000)
 
+
+;; Data type
+;  Bitboars are vectors
+;  Interpretation: a structure of array of bits based on the position of a piece in a board cell. 
+;  The name are based on the type of piece and on its color. "WK" is the white king
+;  Assign uppercase letter to white pieces, and lower case letter to black pieces
 (define BITBOARDS
   (vector WK WQ WR WB WN WP BK BQ BR BB BN BP))
 
-(define (chessboardToBitboards chessboard ChessboardIndex)
+
+
+
+; Assign the piece's bitboards over to the matrix chessboard using ChessboardIndex
+; Interpretation: ChessboardIndex is a value from 0 to 63. It represent the chess cells(define (chessboardToBitboards chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
        (chessboardGet chessboard (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))
@@ -171,6 +217,8 @@
           [(equal? " " (getPiece chessboard ChessboardIndex))
            (chessboardToBitboards chessboard (add1 ChessboardIndex))]))))
 
+
+; get the different bits (strings) representing the pieces from ChessboardIndex and write the chessboard using said bits#
 (define (bitboardsToChessboard chessboard ChessboardIndex)
   (local
     ((define (getBit bitboard ChessboardIndex)
@@ -207,6 +255,9 @@
           [else
            (writeChessBoard chessboard ChessboardIndex " ")]))))
 
+
+
+;; allow the chessboard to be converted from a matrix to a bitboard
 (chessboardToBitboards STANDARD_CHESSBOARD 0)
 (bitboardsToChessboard STANDARD_CHESSBOARD 0)
 
@@ -328,6 +379,8 @@
    #b0000000000000000000000000000000000000000000000001111111100000000
    #b0000000000000000000000000000000000000000000000000000000011111111))
 
+
+; define the diagonals that cover all the 8 rows
 (define FILEMASKS
   (vector
    #b1000000010000000100000001000000010000000100000001000000010000000
