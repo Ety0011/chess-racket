@@ -175,7 +175,7 @@
 ;  Bitboars are vectors
 ;  Interpretation: a structure of array of bits based on the position of a piece in a board cell. 
 ;  The name are based on the type of piece and on its color. "WK" is the white king
-
+;  Assign uppercase letter to white pieces, and lower case letter to black pieces
 (define BITBOARDS (make-hash))
 (dict-set! BITBOARDS "K" WK)
 (dict-set! BITBOARDS "Q" WQ)
@@ -191,6 +191,9 @@
 (dict-set! BITBOARDS "p" BP)
 
 
+
+; Assign the piece's bitboards over to the matrix chessboard using ChessboardIndex
+; Interpretation: ChessboardIndex is a value from 0 to 63. It represent the chess cells
 (define (chessboardToBitboards2 chessboard ChessboardIndex)
   (local
     ((define (getPiece chessboard ChessboardIndex)
@@ -227,9 +230,16 @@
           [(equal? " " (getPiece chessboard ChessboardIndex))
            (chessboardToBitboards2 chessboard (add1 ChessboardIndex))]))))
 
+
+
+
+
 (define (chessboardToBitboards chessboard)
   (chessboardToBitboards2 chessboard 0))
 
+
+
+; get the different bits (strings) representing the pieces from ChessboardIndex and write the chessboard using said bits
 (define (bitboardsToChessboard2 chessboard ChessboardIndex)
   (local
     ((define (getBit bitboard ChessboardIndex)
@@ -266,9 +276,14 @@
           [else
            (writeChessBoard chessboard ChessboardIndex " ")]))))
 
+
+
+
 (define (bitboardsToChessboard chessboard)
   (bitboardsToChessboard2 chessboard 0))
 
+
+;; allow the chessboard to be converted from a matrix to a bitboard
 (chessboardToBitboards STANDARD_CHESSBOARD)
 (bitboardsToChessboard STANDARD_CHESSBOARD)
 
@@ -297,7 +312,7 @@
 
 ;=============================================================================================
 
-;DATA TYPE
+;; Data type
 ;A piece-move is a bitwise operation where: 
 ;   - there are the initial coordinates
 ;   - the bitshift represents the direction of where the piece can go
@@ -345,6 +360,8 @@
    #b0000000000000000000000000000000000000000000000001111111100000000
    #b0000000000000000000000000000000000000000000000000000000011111111))
 
+
+; define the diagonals that cover all the 8 rows
 (define FILEMASKS
   (vector
    #b1000000010000000100000001000000010000000100000001000000010000000
@@ -393,6 +410,10 @@
    #b0000000000000000000000000000000000000000000000001000000001000000
    #b0000000000000000000000000000000000000000000000000000000010000000))
 
+
+
+
+
 (define (kingMoves color whitePieces blackPieces ChessboardIndex)
   (local
     ((define binaryPosition
@@ -413,6 +434,9 @@
 
 (define (queenMoves color allPieces whitePieces blackPieces chessboardIndex)
   (bitwise-ior (rookMoves color allPieces whitePieces blackPieces chessboardIndex) (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)))
+
+
+
 
 (define (rookMoves color allPieces whitePieces blackPieces chessboardIndex)
   (local

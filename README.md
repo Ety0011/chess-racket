@@ -14,4 +14,4 @@ by Leonardo Asaro, Pietro Quintavalle, Etienne Orio, Krit Nicol
 
 - Implemented basic piece movement (not accounting for king safety)
 
-- Herobrine removed
+- Herobrine remove
