@@ -67,7 +67,18 @@
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
-
+(check-expect
+ (begin (chessboardSet EMPTY_CHESSBOARD 0 0 "JESUS"))
+ (begin EMPTY_CHESSBOARD)
+ (vector
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")))
 
 ;  A standart chessboard contain the following pieces in these position.
 ; Interpretation: For example the rooks "R" are on the corners as the starting position in a standart game 
