@@ -505,7 +505,8 @@
 
 ;; King Safety v2
 ; get rooks attacks. Takes the bitboard of all rooks of a certain color as input along with the
-; bitboard of occupied pieces, and returns a bitboard with all attacks
+; bitboard of occupied pieces, and returns a bitboard with all attacks. It works by iterating through
+; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
 (define (getRookAttacks-backend rb occupied chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
@@ -513,7 +514,9 @@
      (getRookAttacks-backend rb occupied (add1 chessboardIndex) (bitwise-ior attacks (rookMoves occupied chessboardIndex)))]
     [else (getRookAttacks-backend rb occupied (add1 chessboardIndex) attacks)]))
     
-; get bishop attacks 
+; get bishop attacks. Takes the bitboard of all bishops of a certain color as input along with the
+; bitboard of occupied pieces, and returns a bitboard with all attacks. It works by iterating through
+; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
 (define (getBishopAttacks-backend bb occupied chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
@@ -521,7 +524,9 @@
      (getBishopAttacks-backend bb occupied (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves occupied chessboardIndex)))]
     [else (getBishopAttacks-backend bb occupied (add1 chessboardIndex) attacks)]))
 
-; get knight attacks
+; get knights attacks. Takes the bitboard of all knights of a certain color as input along with the
+; bitboard of occupied pieces, and returns a bitboard with all attacks. It works by iterating through
+; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
 (define (getKnightAttacks-backend nb occupied chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
@@ -529,7 +534,9 @@
      (getKnightAttacks-backend nb occupied (add1 chessboardIndex) (bitwise-ior attacks (knightMoves occupied chessboardIndex)))]
     [else (getBishopAttacks-backend nb occupied (add1 chessboardIndex) attacks)]))
 
-; get black pawn attacks
+; get black pawn attacks. Takes the bitboard of all black pawns as input along with the bitboard
+; of occupied pieces, and returns a bitboard with all attacks. It works by iterating thorugh the
+; bitboard until it finds a 1, and then gets all the attacks for that position
 (define (getBPawnAttacks-backend pb occupied chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
@@ -537,7 +544,9 @@
      (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (blackPawnAttacks chessboardIndex)))]
     [else (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
 
-; get white pawn attacks
+; get white pawn attacks. Takes the bitboard of all white pawns as input along with the bitboard
+; of occupied pieces, and returns a bitboard with all attacks. It works by iterating thorugh the
+; bitboard until it finds a 1, and then gets all the attacks for that position
 (define (getWPawnAttacks-backend pb occupied chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
@@ -545,49 +554,67 @@
      (getWPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (whitePawnAttacks chessboardIndex)))]
     [else (getWPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
 
-; - bishop attacks frontend
-; Get a bitboard with the combined attacks of all rooks in a bitboard
+
+; USE THESE FUNCTIONS
+; - rook attacks frontend
+; Calls getRookAttacks-backend and automatically passes the accumulators/const bitboards
 (define (getRookAttacks rookBitBoard occupied)
   (getRookAttacks-backend rookBitBoard occupied 0 0))
 
-; Get a bitboard with the combined attacks of all bishops in a bitboard
+; - bishop attacks frontend
+; Calls getBishopAttacks-backend and automatically passes the accumulators/const bitboards
 (define (getBishopAttacks bishopBitBoard occupied)
   (getBishopAttacks-backend bishopBitBoard occupied 0 0))
 
 ; - knight attacks frontend
-; Get a bitboard with the combined attacks of all knights in a bitboard
+; Calls getKnightAttacks-backend and automatically passes the accumulators/const bitboards
 (define (getKnightAttacks knightBitBoard occupied)
   (getKnightAttacks-backend knightBitBoard occupied 0 0))
 
 ; - black pawn attacks frontend
+; Calls getBPawnAttacks-backend and automatically passes the accumulators/const bitboards
 (define (getBPawnAttacks pawnBitBoard occupied)
   (getBPawnAttacks-backend pawnBitBoard occupied 0 0))
 
 ; - white pawn attacks frontend
+; Calls getWPawnAttacks-backend and automatically passes the accumulators/const bitboards
 (define (getWPawnAttacks pawnBitBoard occupied)
   (getWPawnAttacks-backend pawnBitBoard occupied 0 0))
 
+;; Gets the attacks of all black pieces and returns a bitboard of the combined attacks
 (define (getBlackAttacks BR BB BN BP occupied)
   (bitwise-ior (bitwise-ior (getRookAttacks   BR occupied) 
                             (getBishopAttacks BB occupied)) 
                (bitwise-ior (getKnightAttacks BN occupied) 
                             (getBPawnAttacks  BP occupied)))) ; add king and queen later
 
+;; Gets the attacks of all white pieces and returns a bitboard of the combined attacks
 (define (getWhiteAttacks WR WB WN WP occupied)
   (bitwise-ior (bitwise-ior (getRookAttacks   WR occupied)
                             (getBishopAttacks WB occupied))
                (bitwise-ior (getKnightAttacks WN occupied)
                             (getWPawnAttacks  WP occupied)))) ; add king and queen later
 
+;; Performs an and between the WK bitboard and the result of getBlackAttacks. If it returns
+;  0 then the king is safe, else it is in check
 (define (isWhiteKingSafe WK BP BR BB BN BQ BK occupied)
   (local [(define blackAttacks (getBlackAttacks BR BB BN BP occupied))] ; TODO: add king and queen later
     (if (zero? (bitwise-and WK blackAttacks)) #t 
         #f)))
 
+;; Performs an and between the BK bitboard and the result of getWhiteAttacks. If it returns
+;  0 then the king is safe, else it is in check
 (define (isBlackKingSafe BK WP WR WB WN WQ WK occupied)
   (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP occupied))] ; TODO: add king and queen later
     (if (zero? (bitwise-and BK whiteAttacks)) #t
         #f))) 
+
+; TODO: add checkmate
+;   POSSIBLE IMPLEMENTATION: iterate trhough all possible moves for a certain color. If none of
+;                            them produce a legal move (king is unsafe in all positions) then
+;                            it is a checkmate. This function gets called when the king is 
+;                            detected to be in check. 
+;                            TODO: find a way to iterate through all moves
 
 
 
