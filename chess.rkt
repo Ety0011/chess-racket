@@ -7,10 +7,9 @@
 (require 2htdp/universe)
 (require racket/dict)
 
-
-(define WHITE #true)
-(define BLACK #false)
-
+; ========
+; Costants
+; ========
 
 ; The color of the dark and the light squares ot the chessboard
 (define SQUARE_SIDE 100)
@@ -19,7 +18,8 @@
 (define LIGHT_SQUARE (square SQUARE_SIDE "solid" LIGHT_WOOD))
 (define DARK_SQUARE (square SQUARE_SIDE "solid" DARK_WOOD))
 
-
+(define WHITE #true)
+(define BLACK #false)
 
 ;; Data type
 ;  Background is an Image
@@ -34,7 +34,7 @@
          (beside LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE)
          (beside DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE DARK_SQUARE  LIGHT_SQUARE)))
 
-;; Costants
+
 
 ;  The different images of the pieces
 (define WK_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/WK.png")))
@@ -49,6 +49,19 @@
 (define BB_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BB.png")))
 (define BN_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BN.png")))
 (define BP_IMG (scale (/ SQUARE_SIDE 162) (bitmap "img/BP.png")))
+
+(define WK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define WP #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BK #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BQ #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BR #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BB #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BN #b0000000000000000000000000000000000000000000000000000000000000000)
+(define BP #b0000000000000000000000000000000000000000000000000000000000000000)
 
 
 ;; Data type
@@ -67,18 +80,6 @@
    (vector " " " " " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " " ")))
 
-(check-expect
- (begin (chessboardSet EMPTY_CHESSBOARD 0 0 "JESUS"))
- (begin EMPTY_CHESSBOARD)
- (vector
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")
-   (vector " " " " " " " " " " " " " " " ")))
 
 ;  A standart chessboard contain the following pieces in these position.
 ; Interpretation: For example the rooks "R" are on the corners as the starting position in a standart game 
@@ -160,7 +161,24 @@
            (drawPieces2 chessboard (add1 ChessboardIndex))]))))
 
 
+(define (checkChessboardSet chessboard counter)
+  (cond
+    [(equal? 1 counter)
+     chessboard]
+    [else
+     (begin (chessboardSet chessboard 0 0 "JESUS"))
+     (begin (checkChessboardSet chessboard (add1 counter)))]))
 
+(check-expect (checkChessboardSet EMPTY_CHESSBOARD 0)
+              (vector
+   (vector "JESUS" " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")
+   (vector " " " " " " " " " " " " " " " ")))
 
 ;; Data type
 ;  DrawPieces2 is an image
@@ -168,18 +186,7 @@
 (define (drawPieces chessboard)
   (drawPieces2 chessboard 0))
 
-(define WK #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WQ #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WR #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WB #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WN #b0000000000000000000000000000000000000000000000000000000000000000)
-(define WP #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BK #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BQ #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BR #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BB #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BN #b0000000000000000000000000000000000000000000000000000000000000000)
-(define BP #b0000000000000000000000000000000000000000000000000000000000000000)
+
 
 
 ;; Data type
@@ -305,15 +312,6 @@
 
 (define (printBitboards bitboards)
   (printBitboards2 bitboards 0))
-
-;=============================================================================================
-
-;DATA TYPE
-;A piece-move is a bitwise operation where: 
-;   - there are the initial coordinates
-;   - the bitshift represents the direction of where the piece can go
-;   - there are the new coordinates of the pieces after the bitshift
-
 
 (define (reverseBinary2 b ChessboardIndex totalSum)
   (cond
