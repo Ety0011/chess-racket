@@ -283,9 +283,7 @@
 ;   - the bitshift represents the direction of where the piece can go
 ;   - there are the new coordinates of the pieces after the bitshift
 
-     
 
-; Mossa Ety
 (define (reverseBinary2 b ChessboardIndex totalSum)
   (cond
     [(equal? 64 ChessboardIndex) totalSum]
@@ -297,16 +295,25 @@
   (reverseBinary2 b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
 
 
-(define (bitboardsXOR2 bitboards chessboardIndex)
-  (cond
-    [(equal? 11 chessboardIndex) (dict-iterate-value bitboards chessboardIndex)]
-    [else
-     (bitwise-xor (dict-iterate-value bitboards chessboardIndex) (bitboardsXOR2 bitboards (add1 chessboardIndex)))]))
+; for King and Knight
+(define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
+(define FILE_AB #b1100000011000000110000001100000011000000110000001100000011000000)
+(define FILE_GH #b0000001100000011000000110000001100000011000000110000001100000011)
+(define FILE_H #b0000000100000001000000010000000100000001000000010000000100000001)
+(define NOT_FILE_A (bitwise-not FILE_A))
+(define NOT_FILE_AB (bitwise-not FILE_AB))
+(define NOT_FILE_GH (bitwise-not FILE_GH))
+(define NOT_FILE_H (bitwise-not FILE_H))
 
-(define (bitboardsXOR bitboards)
-  (bitboardsXOR2 bitboards 0))
+; for Pawn
+(define RANK_1 #b0000000000000000000000000000000000000000000000000000000011111111)
+(define NOT_RANK_1 (bitwise-not RANK_1))
+(define RANK_4 #b0000000000000000000000000000000011111111000000000000000000000000)
+(define RANK_5 #b0000000000000000000000001111111100000000000000000000000000000000)
+(define RANK_8 #b1111111100000000000000000000000000000000000000000000000000000000)
+(define NOT_RANK_8 (bitwise-not RANK_8))
 
-
+; for Rook
 (define RANKMASKS
   (vector
    #b1111111100000000000000000000000000000000000000000000000000000000
@@ -329,6 +336,7 @@
    #b0000001000000010000000100000001000000010000000100000001000000010
    #b0000000100000001000000010000000100000001000000010000000100000001))
 
+; for Bishop
 (define DIAGONALMASKS
   (vector
    #b1000000000000000000000000000000000000000000000000000000000000000
@@ -365,47 +373,67 @@
    #b0000000000000000000000000000000000000000000000001000000001000000
    #b0000000000000000000000000000000000000000000000000000000010000000))
 
-
-(define (rookMoves occupied ChessboardIndex)
+(define (kingMoves color whitePieces blackPieces ChessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 ChessboardIndex)))
+    (define moves
+       (bitwise-ior
+       (bitwise-and (arithmetic-shift binaryPosition  1) NOT_FILE_H)
+       (bitwise-and (arithmetic-shift binaryPosition  9) NOT_FILE_H)
+       (arithmetic-shift binaryPosition  8)
+       (bitwise-and (arithmetic-shift binaryPosition  7) NOT_FILE_A)
+       (bitwise-and (arithmetic-shift binaryPosition -1) NOT_FILE_A)
+       (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A)
+       (arithmetic-shift binaryPosition -8)
+       (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H))))
+    (if (equal? #true color)
+        (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
+        (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
+
+(define (queenMoves color allPieces whitePieces blackPieces chessboardIndex)
+  (bitwise-ior (rookMoves color allPieces whitePieces blackPieces chessboardIndex) (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)))
+
+(define (rookMoves color allPieces whitePieces blackPieces chessboardIndex)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 63 chessboardIndex)))
     (define horizontalMoves
-      (bitwise-xor (- occupied (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary occupied) (* 2 (reverseBinary binaryPosition))))))
+      (bitwise-xor (- allPieces (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary allPieces) (* 2 (reverseBinary binaryPosition))))))
     (define verticalMoves
-      (bitwise-xor (- (bitwise-and occupied (vector-ref FILEMASKS (modulo ChessboardIndex 8))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref FILEMASKS (modulo ChessboardIndex 8)))) (* 2 (reverseBinary binaryPosition)))))))
-    (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ ChessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo ChessboardIndex 8))))))
+      (bitwise-xor (- (bitwise-and allPieces (vector-ref FILEMASKS (modulo chessboardIndex 8))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref FILEMASKS (modulo chessboardIndex 8)))) (* 2 (reverseBinary binaryPosition))))))
+    (define moves
+      (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ chessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo chessboardIndex 8))))))
+    (if (equal? #true color)
+        (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
+        (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
 
 
-(define (bishopMoves occupied ChessboardIndex)
+(define (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex)))
+      (arithmetic-shift 1 (- 63 chessboardIndex)))
     (define DiagonalMoves
-      (bitwise-xor (- (bitwise-and occupied (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8))))) (* 2 (reverseBinary binaryPosition))))))
+      (bitwise-xor (- (bitwise-and allPieces (vector-ref DIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8)))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref DIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8))))) (* 2 (reverseBinary binaryPosition))))))
     (define AntiDiagonalMoves
-      (bitwise-xor (- (bitwise-and occupied (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and occupied (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition)))))))
-    (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (modulo ChessboardIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ ChessboardIndex 8)) (- 7 (modulo ChessboardIndex 8))))))))
+      (bitwise-xor (- (bitwise-and allPieces (vector-ref ANTIDIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (- 7 (modulo chessboardIndex 8))))) (* 2 binaryPosition))
+                   (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref ANTIDIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (- 7 (modulo chessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition))))))
+    (define moves
+      (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (- 7 (modulo chessboardIndex 8))))))))
+    (if (equal? #true color)
+        (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
+        (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
 
 
-(define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
-(define FILE_AB #b1100000011000000110000001100000011000000110000001100000011000000)
-(define FILE_GH #b0000001100000011000000110000001100000011000000110000001100000011)
-(define FILE_H #b0000000100000001000000010000000100000001000000010000000100000001)
-(define NOT_FILE_A (bitwise-not FILE_A))
-(define NOT_FILE_AB (bitwise-not FILE_AB))
-(define NOT_FILE_GH (bitwise-not FILE_GH))
-(define NOT_FILE_H (bitwise-not FILE_H))
-
-(define (knightMoves ChessboardIndex)
+(define (knightMoves color whitePieces blackPieces chessboardIndex)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
+      (arithmetic-shift 1 (- 63 chessboardIndex)))
+    (define moves
+     (bitwise-ior
      (bitwise-and (arithmetic-shift binaryPosition  10) NOT_FILE_GH)
      (bitwise-and (arithmetic-shift binaryPosition  17) NOT_FILE_H)
      (bitwise-and (arithmetic-shift binaryPosition  15) NOT_FILE_A)
@@ -414,44 +442,64 @@
      (bitwise-and (arithmetic-shift binaryPosition -17) NOT_FILE_A)
      (bitwise-and (arithmetic-shift binaryPosition -15) NOT_FILE_H)
      (bitwise-and (arithmetic-shift binaryPosition -6)  NOT_FILE_GH))))
+    (if (equal? #true color)
+        (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
+        (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
 
-(define (kingMoves ChessboardIndex)
+
+
+
+(define (PawnMoves color allPieces whitePieces blackPieces chessboardIndex)
   (local
     ((define binaryPosition
-      (arithmetic-shift 1 (- 63 ChessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition  1) NOT_FILE_H)
-     (bitwise-and (arithmetic-shift binaryPosition  9) NOT_FILE_H)
-                  (arithmetic-shift binaryPosition  8)
-     (bitwise-and (arithmetic-shift binaryPosition  7) NOT_FILE_A)
-     (bitwise-and (arithmetic-shift binaryPosition -1) NOT_FILE_A)
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A)
-                  (arithmetic-shift binaryPosition -8)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H))))
+      (arithmetic-shift 1 (- 63 chessboardIndex)))
+    (define whiteMoves
+     (bitwise-ior
+     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8 blackPieces)
+     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8 blackPieces)
+     (bitwise-and (arithmetic-shift binaryPosition 8) (bitwise-not allPieces) NOT_RANK_8)
+     (bitwise-and (arithmetic-shift binaryPosition 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4)))
+    (define blackMoves
+     (bitwise-ior
+     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1 whitePieces)
+     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1 whitePieces)
+     (bitwise-and (arithmetic-shift binaryPosition -8) (bitwise-not allPieces) NOT_RANK_1)
+     (bitwise-and (arithmetic-shift binaryPosition -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))))
+    (if (equal? #true color)
+        (bitwise-and whiteMoves (bitwise-not (bitwise-and whiteMoves whitePieces)))
+        (bitwise-and blackMoves (bitwise-not (bitwise-and blackMoves blackPieces))))))
 
 
-(define (queenMoves occupied ChessboardIndex)
-  (bitwise-ior (rookMoves occupied ChessboardIndex) (bishopMoves occupied ChessboardIndex)))
-    
 
 
-(define RANK_1 #b0000000000000000000000000000000000000000000000000000000011111111)
-(define NOT_RANK_1 (bitwise-not RANK_1))
-(define RANK_4 #b0000000000000000000000000000000011111111000000000000000000000000)
-(define RANK_5 #b0000000000000000000000001111111100000000000000000000000000000000)
-(define RANK_8 #b1111111100000000000000000000000000000000000000000000000000000000)
-(define NOT_RANK_8 (bitwise-not RANK_8))
-
-
-(define (whitePawnMoves occupied chessboardIndex)
+(define (whitePawnMoves allPieces chessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 chessboardIndex))))
     (bitwise-ior
      (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
      (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 8) (bitwise-not occupied) NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 16) (arithmetic-shift (bitwise-not occupied) 8) (bitwise-not occupied) RANK_4))))
+     (bitwise-and (arithmetic-shift binaryPosition 8) (bitwise-not allPieces) NOT_RANK_8)
+     (bitwise-and (arithmetic-shift binaryPosition 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4))))
+
+(define (blackPawnMoves allPieces chessboardIndex)
+  (local
+    ((define binaryPosition
+      (arithmetic-shift 1 (- 63 chessboardIndex))))
+    (bitwise-ior
+     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
+     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1)
+     (bitwise-and (arithmetic-shift binaryPosition -8) (bitwise-not allPieces) NOT_RANK_1)
+     (bitwise-and (arithmetic-shift binaryPosition -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))))
+
+
+    
+;=============================================================================================
+
+
+
+
+
 
 (define (whitePawnAttacks chessboardIndex)
   (local
@@ -460,16 +508,6 @@
     (bitwise-ior
      (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
      (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8))))
-
-(define (blackPawnMoves occupied chessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -8) (bitwise-not occupied) NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -16) (arithmetic-shift (bitwise-not occupied) -8) (bitwise-not occupied) RANK_5))))
 
 (define (blackPawnAttacks chessboardIndex)
   (local
@@ -518,107 +556,107 @@
 
 ;; King Safety v2
 ; get rooks attacks. Takes the bitboard of all rooks of a certain color as input along with the
-; bitboard of occupied pieces, and returns a bitboard with all attacks. It works by iterating through
+; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getRookAttacks-backend rb occupied chessboardIndex attacks)
+(define (getRookAttacks-backend rb allPieces chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift rb (- chessboardIndex 63))))
-     (getRookAttacks-backend rb occupied (add1 chessboardIndex) (bitwise-ior attacks (rookMoves occupied chessboardIndex)))]
-    [else (getRookAttacks-backend rb occupied (add1 chessboardIndex) attacks)]))
+     (getRookAttacks-backend rb allPieces (add1 chessboardIndex) (bitwise-ior attacks (rookMoves allPieces chessboardIndex)))]
+    [else (getRookAttacks-backend rb allPieces (add1 chessboardIndex) attacks)]))
     
 ; get bishop attacks. Takes the bitboard of all bishops of a certain color as input along with the
-; bitboard of occupied pieces, and returns a bitboard with all attacks. It works by iterating through
+; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getBishopAttacks-backend bb occupied chessboardIndex attacks)
+(define (getBishopAttacks-backend bb allPieces chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift bb (- chessboardIndex 63))))
-     (getBishopAttacks-backend bb occupied (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves occupied chessboardIndex)))]
-    [else (getBishopAttacks-backend bb occupied (add1 chessboardIndex) attacks)]))
+     (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves allPieces chessboardIndex)))]
+    [else (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get knights attacks. Takes the bitboard of all knights of a certain color as input along with the
-; bitboard of occupied pieces, and returns a bitboard with all attacks. It works by iterating through
+; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getKnightAttacks-backend nb occupied chessboardIndex attacks)
+(define (getKnightAttacks-backend nb allPieces chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift nb (- chessboardIndex 63))))
-     (getKnightAttacks-backend nb occupied (add1 chessboardIndex) (bitwise-ior attacks (knightMoves occupied chessboardIndex)))]
-    [else (getBishopAttacks-backend nb occupied (add1 chessboardIndex) attacks)]))
+     (getKnightAttacks-backend nb allPieces (add1 chessboardIndex) (bitwise-ior attacks (knightMoves allPieces chessboardIndex)))]
+    [else (getBishopAttacks-backend nb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get black pawn attacks. Takes the bitboard of all black pawns as input along with the bitboard
-; of occupied pieces, and returns a bitboard with all attacks. It works by iterating thorugh the
+; of allPieces pieces, and returns a bitboard with all attacks. It works by iterating thorugh the
 ; bitboard until it finds a 1, and then gets all the attacks for that position
-(define (getBPawnAttacks-backend pb occupied chessboardIndex attacks)
+(define (getBPawnAttacks-backend pb allPieces chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift pb (- chessboardIndex 63))))
-     (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (blackPawnAttacks chessboardIndex)))]
-    [else (getBPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
+     (getBPawnAttacks-backend pb allPieces (add1 chessboardIndex) (bitwise-ior attacks (blackPawnAttacks chessboardIndex)))]
+    [else (getBPawnAttacks-backend pb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get white pawn attacks. Takes the bitboard of all white pawns as input along with the bitboard
-; of occupied pieces, and returns a bitboard with all attacks. It works by iterating thorugh the
+; of allPieces pieces, and returns a bitboard with all attacks. It works by iterating thorugh the
 ; bitboard until it finds a 1, and then gets all the attacks for that position
-(define (getWPawnAttacks-backend pb occupied chessboardIndex attacks)
+(define (getWPawnAttacks-backend pb allPieces chessboardIndex attacks)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift pb (- chessboardIndex 63))))
-     (getWPawnAttacks-backend pb occupied (add1 chessboardIndex) (bitwise-ior attacks (whitePawnAttacks chessboardIndex)))]
-    [else (getWPawnAttacks-backend pb occupied (add1 chessboardIndex) attacks)]))
+     (getWPawnAttacks-backend pb allPieces (add1 chessboardIndex) (bitwise-ior attacks (whitePawnAttacks chessboardIndex)))]
+    [else (getWPawnAttacks-backend pb allPieces (add1 chessboardIndex) attacks)]))
 
 
 ; USE THESE FUNCTIONS
 ; - rook attacks frontend
 ; Calls getRookAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getRookAttacks rookBitBoard occupied)
-  (getRookAttacks-backend rookBitBoard occupied 0 0))
+(define (getRookAttacks rookBitBoard allPieces)
+  (getRookAttacks-backend rookBitBoard allPieces 0 0))
 
 ; - bishop attacks frontend
 ; Calls getBishopAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getBishopAttacks bishopBitBoard occupied)
-  (getBishopAttacks-backend bishopBitBoard occupied 0 0))
+(define (getBishopAttacks bishopBitBoard allPieces)
+  (getBishopAttacks-backend bishopBitBoard allPieces 0 0))
 
 ; - knight attacks frontend
 ; Calls getKnightAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getKnightAttacks knightBitBoard occupied)
-  (getKnightAttacks-backend knightBitBoard occupied 0 0))
+(define (getKnightAttacks knightBitBoard allPieces)
+  (getKnightAttacks-backend knightBitBoard allPieces 0 0))
 
 ; - black pawn attacks frontend
 ; Calls getBPawnAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getBPawnAttacks pawnBitBoard occupied)
-  (getBPawnAttacks-backend pawnBitBoard occupied 0 0))
+(define (getBPawnAttacks pawnBitBoard allPieces)
+  (getBPawnAttacks-backend pawnBitBoard allPieces 0 0))
 
 ; - white pawn attacks frontend
 ; Calls getWPawnAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getWPawnAttacks pawnBitBoard occupied)
-  (getWPawnAttacks-backend pawnBitBoard occupied 0 0))
+(define (getWPawnAttacks pawnBitBoard allPieces)
+  (getWPawnAttacks-backend pawnBitBoard allPieces 0 0))
 
 ;; Gets the attacks of all black pieces and returns a bitboard of the combined attacks
-(define (getBlackAttacks BR BB BN BP occupied)
-  (bitwise-ior (bitwise-ior (getRookAttacks   BR occupied) 
-                            (getBishopAttacks BB occupied)) 
-               (bitwise-ior (getKnightAttacks BN occupied) 
-                            (getBPawnAttacks  BP occupied)))) ; add king and queen later
+(define (getBlackAttacks BR BB BN BP allPieces)
+  (bitwise-ior (bitwise-ior (getRookAttacks   BR allPieces) 
+                            (getBishopAttacks BB allPieces)) 
+               (bitwise-ior (getKnightAttacks BN allPieces) 
+                            (getBPawnAttacks  BP allPieces)))) ; add king and queen later
 
 ;; Gets the attacks of all white pieces and returns a bitboard of the combined attacks
-(define (getWhiteAttacks WR WB WN WP occupied)
-  (bitwise-ior (bitwise-ior (getRookAttacks   WR occupied)
-                            (getBishopAttacks WB occupied))
-               (bitwise-ior (getKnightAttacks WN occupied)
-                            (getWPawnAttacks  WP occupied)))) ; add king and queen later
+(define (getWhiteAttacks WR WB WN WP allPieces)
+  (bitwise-ior (bitwise-ior (getRookAttacks   WR allPieces)
+                            (getBishopAttacks WB allPieces))
+               (bitwise-ior (getKnightAttacks WN allPieces)
+                            (getWPawnAttacks  WP allPieces)))) ; add king and queen later
 
 ;; Performs an and between the WK bitboard and the result of getBlackAttacks. If it returns
 ;  0 then the king is safe, else it is in check
-(define (isWhiteKingSafe WK BP BR BB BN BQ BK occupied)
-  (local [(define blackAttacks (getBlackAttacks BR BB BN BP occupied))] ; TODO: add king and queen later
+(define (isWhiteKingSafe WK BP BR BB BN BQ BK allPieces)
+  (local [(define blackAttacks (getBlackAttacks BR BB BN BP allPieces))] ; TODO: add king and queen later
     (if (zero? (bitwise-and WK blackAttacks)) #t 
         #f)))
 
 ;; Performs an and between the BK bitboard and the result of getWhiteAttacks. If it returns
 ;  0 then the king is safe, else it is in check
-(define (isBlackKingSafe BK WP WR WB WN WQ WK occupied)
-  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP occupied))] ; TODO: add king and queen later
+(define (isBlackKingSafe BK WP WR WB WN WQ WK allPieces)
+  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP allPieces))] ; TODO: add king and queen later
     (if (zero? (bitwise-and BK whiteAttacks)) #t
         #f))) 
 
@@ -722,20 +760,41 @@
 
 
 
-
-
-
-
-  
-
-
 (define (makeMove worldState)
   (local
-    ((define occupied
-      (bitboardsXOR (worldState-bitboards worldState))))
+    ((define allPieces
+      (bitwise-xor
+        (dict-ref BITBOARDS "K")
+        (dict-ref BITBOARDS "Q")
+        (dict-ref BITBOARDS "R")
+        (dict-ref BITBOARDS "B")
+        (dict-ref BITBOARDS "N")
+        (dict-ref BITBOARDS "P")
+        (dict-ref BITBOARDS "k")
+        (dict-ref BITBOARDS "q")
+        (dict-ref BITBOARDS "r")
+        (dict-ref BITBOARDS "b")
+        (dict-ref BITBOARDS "n")
+        (dict-ref BITBOARDS "p")))
+     (define whitePieces
+       (bitwise-xor
+        (dict-ref BITBOARDS "K")
+        (dict-ref BITBOARDS "Q")
+        (dict-ref BITBOARDS "R")
+        (dict-ref BITBOARDS "B")
+        (dict-ref BITBOARDS "N")
+        (dict-ref BITBOARDS "P")))
+     (define blackPieces
+       (bitwise-xor
+        (dict-ref BITBOARDS "k")
+        (dict-ref BITBOARDS "q")
+        (dict-ref BITBOARDS "r")
+        (dict-ref BITBOARDS "b")
+        (dict-ref BITBOARDS "n")
+        (dict-ref BITBOARDS "p"))))
      (if (currentMove? (worldState-currentMove worldState))
         (cond
-          [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece worldState (startIndex worldState) occupied) (arithmetic-shift 1 (- 63 (endIndex worldState)))) (- (endIndex worldState) 63)))
+          [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece (currentMove-type (worldState-currentMove worldState)) (currentMove-color (worldState-currentMove worldState)) (startIndex worldState) allPieces whitePieces blackPieces) (arithmetic-shift 1 (- 63 (endIndex worldState)))) (- (endIndex worldState) 63)))
            (begin (dict-set! BITBOARDS (currentMove-type (worldState-currentMove worldState)) (bitwise-xor (dict-ref BITBOARDS (currentMove-type (worldState-currentMove worldState))) (arithmetic-shift 1 (- 63 (startIndex worldState))))))
            (begin (dict-set! BITBOARDS (currentMove-type (worldState-currentMove worldState)) (bitwise-xor (dict-ref BITBOARDS (currentMove-type (worldState-currentMove worldState))) (arithmetic-shift 1 (- 63 (endIndex worldState))))))
 
@@ -771,22 +830,20 @@
 ;                      (void)))
 
 
-(define (getMovesPiece worldState chessboardIndex occupied)
+(define (getMovesPiece type color chessboardIndex allPieces whitePieces blackPieces)
   (cond
-    [(or (equal? "K" (currentMove-type (worldState-currentMove worldState))) (equal? "k" (currentMove-type (worldState-currentMove worldState))))
-             (kingMoves chessboardIndex)]
-    [(or (equal? "Q" (currentMove-type (worldState-currentMove worldState))) (equal? "q" (currentMove-type (worldState-currentMove worldState))))
-             (queenMoves occupied chessboardIndex)]
-    [(or (equal? "R" (currentMove-type (worldState-currentMove worldState))) (equal? "r" (currentMove-type (worldState-currentMove worldState))))
-             (rookMoves occupied chessboardIndex )]
-    [(or (equal? "B" (currentMove-type (worldState-currentMove worldState))) (equal? "b" (currentMove-type (worldState-currentMove worldState))))
-             (bishopMoves occupied chessboardIndex )]
-    [(or (equal? "N" (currentMove-type (worldState-currentMove worldState))) (equal? "n" (currentMove-type (worldState-currentMove worldState))))
-             (knightMoves chessboardIndex )]
-    [(equal? "P" (currentMove-type (worldState-currentMove worldState)))
-             (whitePawnMoves occupied chessboardIndex)]
-    [(equal? "p" (currentMove-type (worldState-currentMove worldState)))
-             (blackPawnMoves occupied chessboardIndex)]))
+    [(or (equal? "K" type) (equal? "k" type))
+             (kingMoves color whitePieces blackPieces chessboardIndex)]
+    [(or (equal? "Q" type) (equal? "q" type))
+             (queenMoves color allPieces whitePieces blackPieces chessboardIndex)]
+    [(or (equal? "R" type) (equal? "r" type))
+             (rookMoves color allPieces whitePieces blackPieces chessboardIndex)]
+    [(or (equal? "B" type) (equal? "b" type))
+             (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)]
+    [(or (equal? "N" type) (equal? "n" type))
+             (knightMoves color whitePieces blackPieces chessboardIndex)]
+    [(or (equal? "P" type) (equal? "p" type))
+             (PawnMoves color allPieces whitePieces blackPieces chessboardIndex)]))
 
 
 (define testState (make-worldState
@@ -801,16 +858,15 @@
                          (make-posn 25 550))
                         #false))
  
-(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))) (arithmetic-shift 1 (- 63 (endIndex testState)))) (- (endIndex testState) 63)))
+;(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState) 0 11)) (arithmetic-shift 1 (- 63 (endIndex testState)))) (- (endIndex testState) 63)))
+;"PIECEMOVES"
+;(printBitboard (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))))
+;"ACTUALMOVE"
+;(printBitboard (arithmetic-shift 1 (- 63 (endIndex testState))))
+;"AND"
+;(printBitboard (bitwise-and (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))) (arithmetic-shift 1 (- 63 (endIndex testState)))))
 
-"PIECEMOVES"
-(printBitboard (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))))
-"ACTUALMOVE"
-(printBitboard (arithmetic-shift 1 (- 63 (endIndex testState))))
-"AND"
-(printBitboard (bitwise-and (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))) (arithmetic-shift 1 (- 63 (endIndex testState)))))
-
-
+;(kingMoves WHITE (bitboardsXOR (worldState-bitboards worldState) 0 5) blackPieces ChessboardIndex)
 
 
 
