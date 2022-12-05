@@ -135,8 +135,8 @@
 
 
 ; Signature
-; chessboardSet: Chessboard Number Number -> Void
-; Intepretation: takes the coordinates of 'row' and 'column' of a 'chessboard' to update the stored value in the corresponding element with 'value' and returns nothing
+; chessboardSet: Chessboard Number Number -> Chessboard
+; Intepretation: takes the coordinates of 'row' and 'column' of a 'chessboard' and returns the same chessboard with the updated value in the corresponding coordinate
 ; Header: (define (chessboardSet matrix row col value))
 ; Additional infos: not in library, adapted from https://stackoverflow.com/questions/38421007/update-element-of-immutable-vector-vector-set
 
