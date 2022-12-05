@@ -115,6 +115,88 @@
         (cons "n" 0)
         (cons "p" 0)))
 
+; for King and Knight
+(define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
+(define FILE_AB #b1100000011000000110000001100000011000000110000001100000011000000)
+(define FILE_GH #b0000001100000011000000110000001100000011000000110000001100000011)
+(define FILE_H #b0000000100000001000000010000000100000001000000010000000100000001)
+(define NOT_FILE_A (bitwise-not FILE_A))
+(define NOT_FILE_AB (bitwise-not FILE_AB))
+(define NOT_FILE_GH (bitwise-not FILE_GH))
+(define NOT_FILE_H (bitwise-not FILE_H))
+
+; for Pawn
+(define RANK_1 #b0000000000000000000000000000000000000000000000000000000011111111)
+(define NOT_RANK_1 (bitwise-not RANK_1))
+(define RANK_4 #b0000000000000000000000000000000011111111000000000000000000000000)
+(define RANK_5 #b0000000000000000000000001111111100000000000000000000000000000000)
+(define RANK_8 #b1111111100000000000000000000000000000000000000000000000000000000)
+(define NOT_RANK_8 (bitwise-not RANK_8))
+
+; for Rook
+(define RANKMASKS
+  (vector
+   #b1111111100000000000000000000000000000000000000000000000000000000
+   #b0000000011111111000000000000000000000000000000000000000000000000
+   #b0000000000000000111111110000000000000000000000000000000000000000
+   #b0000000000000000000000001111111100000000000000000000000000000000
+   #b0000000000000000000000000000000011111111000000000000000000000000
+   #b0000000000000000000000000000000000000000111111110000000000000000
+   #b0000000000000000000000000000000000000000000000001111111100000000
+   #b0000000000000000000000000000000000000000000000000000000011111111))
+
+
+; define the diagonals that cover all the 8 rows
+(define FILEMASKS
+  (vector
+   #b1000000010000000100000001000000010000000100000001000000010000000
+   #b0100000001000000010000000100000001000000010000000100000001000000
+   #b0010000000100000001000000010000000100000001000000010000000100000
+   #b0001000000010000000100000001000000010000000100000001000000010000
+   #b0000100000001000000010000000100000001000000010000000100000001000
+   #b0000010000000100000001000000010000000100000001000000010000000100
+   #b0000001000000010000000100000001000000010000000100000001000000010
+   #b0000000100000001000000010000000100000001000000010000000100000001))
+
+; for Bishop
+(define DIAGONALMASKS
+  (vector
+   #b1000000000000000000000000000000000000000000000000000000000000000
+   #b0100000010000000000000000000000000000000000000000000000000000000
+   #b0010000001000000100000000000000000000000000000000000000000000000
+   #b0001000000100000010000001000000000000000000000000000000000000000
+   #b0000100000010000001000000100000010000000000000000000000000000000
+   #b0000010000001000000100000010000001000000100000000000000000000000
+   #b0000001000000100000010000001000000100000010000001000000000000000
+   #b0000000100000010000001000000100000010000001000000100000010000000
+   #b0000000000000001000000100000010000001000000100000010000001000000
+   #b0000000000000000000000010000001000000100000010000001000000100000
+   #b0000000000000000000000000000000100000010000001000000100000010000
+   #b0000000000000000000000000000000000000001000000100000010000001000
+   #b0000000000000000000000000000000000000000000000010000001000000100
+   #b0000000000000000000000000000000000000000000000000000000100000010
+   #b0000000000000000000000000000000000000000000000000000000000000001))
+
+; for Bishop
+(define ANTIDIAGONALMASKS
+  (vector
+   #b0000000100000000000000000000000000000000000000000000000000000000
+   #b0000001000000001000000000000000000000000000000000000000000000000
+   #b0000010000000010000000010000000000000000000000000000000000000000
+   #b0000100000000100000000100000000100000000000000000000000000000000
+   #b0001000000001000000001000000001000000001000000000000000000000000
+   #b0010000000010000000010000000010000000010000000010000000000000000
+   #b0100000000100000000100000000100000000100000000100000000100000000
+   #b1000000001000000001000000001000000001000000001000000001000000001
+   #b0000000010000000010000000010000000010000000010000000010000000010
+   #b0000000000000000100000000100000000100000000100000000100000000100
+   #b0000000000000000000000001000000001000000001000000001000000001000
+   #b0000000000000000000000000000000010000000010000000010000000010000
+   #b0000000000000000000000000000000000000000100000000100000000100000
+   #b0000000000000000000000000000000000000000000000001000000001000000
+   #b0000000000000000000000000000000000000000000000000000000010000000))
+
+
 ; =========
 ; Functions
 ; =========
@@ -353,236 +435,166 @@
     (drawPiecesAcc chessboard 0)))
 
 
+; Signature
+; printBitboard: Bitboard -> Chessboard<Number>
+; Intepretation: prints the bitboard as a Chessboard 
+; Header:
+; (define (printBitboard bitboard)
+;   (vector
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0)
+;    (vector 0 0 0 0 0 0 0 0))))
 
+; Checks
+(check-expect (printBitboard (dict-ref BITBOARDS_OF_STANDARD_CHESSBOARD "K"))
+              (vector
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 1 0 0 0)))
+(check-expect (printBitboard (dict-ref BITBOARDS_OF_STANDARD_CHESSBOARD "r"))
+              (vector
+               (vector 1 0 0 0 0 0 0 1)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)))
+(check-expect (printBitboard (dict-ref BITBOARDS_OF_STANDARD_CHESSBOARD "P"))
+              (vector
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 0 0 0 0 0 0 0 0)
+               (vector 1 1 1 1 1 1 1 1)
+               (vector 0 0 0 0 0 0 0 0)))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(define (printBitboard2 bitboard chessboardIndex)
-  (cond
-    [(equal? 8 chessboardIndex) (void)]
-    [else
-     (begin (writeln (~r (bitwise-and (arithmetic-shift bitboard (* -8 (- 7 chessboardIndex))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0"))
-            (printBitboard2 bitboard (add1 chessboardIndex)))]))
-
+; Implementation
 (define (printBitboard bitboard)
-  (printBitboard2 bitboard 0))
-
-
-(define (printBitboards2 bitboards chessboardIndex)
-  (cond
-    [(equal? (vector-length bitboards) chessboardIndex) (void)]
-    [else
-     (begin (writeln "        ")
-            (printBitboard (vector-ref bitboards chessboardIndex))
-            (printBitboards2 bitboards (add1 chessboardIndex)))]))
-
-(define (printBitboards bitboards)
-  (printBitboards2 bitboards 0))
-
-;=============================================================================================
-
-;; Data type
-;A piece-move is a bitwise operation where: 
-;   - there are the initial coordinates
-;   - the bitshift represents the direction of where the piece can go
-;   - there are the new coordinates of the pieces after the bitshift
-
-
-(define (reverseBinary2 b chessboardIndex totalSum)
-  (cond
-    [(equal? 64 chessboardIndex) totalSum]
-    [(equal? 1 (bitwise-and 1 (arithmetic-shift b (- chessboardIndex 63))))
-       (reverseBinary2 b (add1 chessboardIndex) (+ totalSum (arithmetic-shift 1 chessboardIndex)))]
-    [else (reverseBinary2 b (add1 chessboardIndex) totalSum)]))
-
-(define (reverseBinary b)
-  (reverseBinary2 b 0 #b0000000000000000000000000000000000000000000000000000000000000000))
-
-
-; for King and Knight
-(define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
-(define FILE_AB #b1100000011000000110000001100000011000000110000001100000011000000)
-(define FILE_GH #b0000001100000011000000110000001100000011000000110000001100000011)
-(define FILE_H #b0000000100000001000000010000000100000001000000010000000100000001)
-(define NOT_FILE_A (bitwise-not FILE_A))
-(define NOT_FILE_AB (bitwise-not FILE_AB))
-(define NOT_FILE_GH (bitwise-not FILE_GH))
-(define NOT_FILE_H (bitwise-not FILE_H))
-
-; for Pawn
-(define RANK_1 #b0000000000000000000000000000000000000000000000000000000011111111)
-(define NOT_RANK_1 (bitwise-not RANK_1))
-(define RANK_4 #b0000000000000000000000000000000011111111000000000000000000000000)
-(define RANK_5 #b0000000000000000000000001111111100000000000000000000000000000000)
-(define RANK_8 #b1111111100000000000000000000000000000000000000000000000000000000)
-(define NOT_RANK_8 (bitwise-not RANK_8))
-
-; for Rook
-(define RANKMASKS
-  (vector
-   #b1111111100000000000000000000000000000000000000000000000000000000
-   #b0000000011111111000000000000000000000000000000000000000000000000
-   #b0000000000000000111111110000000000000000000000000000000000000000
-   #b0000000000000000000000001111111100000000000000000000000000000000
-   #b0000000000000000000000000000000011111111000000000000000000000000
-   #b0000000000000000000000000000000000000000111111110000000000000000
-   #b0000000000000000000000000000000000000000000000001111111100000000
-   #b0000000000000000000000000000000000000000000000000000000011111111))
-
-
-; define the diagonals that cover all the 8 rows
-(define FILEMASKS
-  (vector
-   #b1000000010000000100000001000000010000000100000001000000010000000
-   #b0100000001000000010000000100000001000000010000000100000001000000
-   #b0010000000100000001000000010000000100000001000000010000000100000
-   #b0001000000010000000100000001000000010000000100000001000000010000
-   #b0000100000001000000010000000100000001000000010000000100000001000
-   #b0000010000000100000001000000010000000100000001000000010000000100
-   #b0000001000000010000000100000001000000010000000100000001000000010
-   #b0000000100000001000000010000000100000001000000010000000100000001))
-
-; for Bishop
-(define DIAGONALMASKS
-  (vector
-   #b1000000000000000000000000000000000000000000000000000000000000000
-   #b0100000010000000000000000000000000000000000000000000000000000000
-   #b0010000001000000100000000000000000000000000000000000000000000000
-   #b0001000000100000010000001000000000000000000000000000000000000000
-   #b0000100000010000001000000100000010000000000000000000000000000000
-   #b0000010000001000000100000010000001000000100000000000000000000000
-   #b0000001000000100000010000001000000100000010000001000000000000000
-   #b0000000100000010000001000000100000010000001000000100000010000000
-   #b0000000000000001000000100000010000001000000100000010000001000000
-   #b0000000000000000000000010000001000000100000010000001000000100000
-   #b0000000000000000000000000000000100000010000001000000100000010000
-   #b0000000000000000000000000000000000000001000000100000010000001000
-   #b0000000000000000000000000000000000000000000000010000001000000100
-   #b0000000000000000000000000000000000000000000000000000000100000010
-   #b0000000000000000000000000000000000000000000000000000000000000001))
-
-(define ANTIDIAGONALMASKS
-  (vector
-   #b0000000100000000000000000000000000000000000000000000000000000000
-   #b0000001000000001000000000000000000000000000000000000000000000000
-   #b0000010000000010000000010000000000000000000000000000000000000000
-   #b0000100000000100000000100000000100000000000000000000000000000000
-   #b0001000000001000000001000000001000000001000000000000000000000000
-   #b0010000000010000000010000000010000000010000000010000000000000000
-   #b0100000000100000000100000000100000000100000000100000000100000000
-   #b1000000001000000001000000001000000001000000001000000001000000001
-   #b0000000010000000010000000010000000010000000010000000010000000010
-   #b0000000000000000100000000100000000100000000100000000100000000100
-   #b0000000000000000000000001000000001000000001000000001000000001000
-   #b0000000000000000000000000000000010000000010000000010000000010000
-   #b0000000000000000000000000000000000000000100000000100000000100000
-   #b0000000000000000000000000000000000000000000000001000000001000000
-   #b0000000000000000000000000000000000000000000000000000000010000000))
-
-
-
-
-
-(define (kingMoves color whitePieces blackPieces chessboardIndex)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex)))
-    (define moves
+    ((define chessboard
+       (vector
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0)
+        (vector 0 0 0 0 0 0 0 0))))
+   (for/vector ([j (in-range (vector-length chessboard))])
+     (for/vector ([k (in-range (vector-length (vector-ref chessboard j)))])
+       (if (equal? 1 (bitwise-and 1 (arithmetic-shift bitboard (- (+ k (* 8 j)) 63))))
+           1
+           0)))))
+
+
+; Signature
+; reverseBinary: Number -> String
+; Interpretation: takes a 'binary' and returns it with all the bits reversed
+
+; Checks
+(check-expect (reverseBinary #b1000000000000000000000000000000000000000000000000000000000000000)
+                             #b0000000000000000000000000000000000000000000000000000000000000001)
+(check-expect (reverseBinary #b1101010000000000000000000000000000000000000000000000000000000000)
+                             #b0000000000000000000000000000000000000000000000000000000000101011)
+(check-expect (reverseBinary #b0000000000000000000111000000000010000000000000000000000000000011)
+                             #b1100000000000000000000000000000100000000001110000000000000000000)
+
+; Implementation
+(define (reverseBinary binary)
+  (local
+    ((define (reverseBinaryAcc binary chessboardIndex totalSum)
+       (cond
+         [(equal? 64 chessboardIndex) totalSum]
+         [(equal? 1 (bitwise-and 1 (arithmetic-shift binary (- chessboardIndex 63))))
+          (reverseBinaryAcc binary (add1 chessboardIndex) (+ totalSum (arithmetic-shift 1 chessboardIndex)))]
+         [else (reverseBinaryAcc binary (add1 chessboardIndex) totalSum)])))
+     (reverseBinaryAcc binary 0 0)))
+
+
+
+
+; Signature
+; kingMoves: Boolean Bitboard Bitboard Number
+; Interpreation: takes the color of the king
+(define (kingMoves color whitePieces blackPieces positionBitboard)
+  (local
+    ((define moves
        (bitwise-ior
-       (bitwise-and (arithmetic-shift binaryPosition  1) NOT_FILE_H)
-       (bitwise-and (arithmetic-shift binaryPosition  9) NOT_FILE_H)
-       (arithmetic-shift binaryPosition  8)
-       (bitwise-and (arithmetic-shift binaryPosition  7) NOT_FILE_A)
-       (bitwise-and (arithmetic-shift binaryPosition -1) NOT_FILE_A)
-       (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A)
-       (arithmetic-shift binaryPosition -8)
-       (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H))))
+        (bitwise-and (arithmetic-shift positionBitboard  1) NOT_FILE_H)
+        (bitwise-and (arithmetic-shift positionBitboard  9) NOT_FILE_H)
+        (arithmetic-shift positionBitboard  8)
+        (bitwise-and (arithmetic-shift positionBitboard  7) NOT_FILE_A)
+        (bitwise-and (arithmetic-shift positionBitboard -1) NOT_FILE_A)
+        (bitwise-and (arithmetic-shift positionBitboard -9) NOT_FILE_A)
+        (arithmetic-shift positionBitboard -8)
+        (bitwise-and (arithmetic-shift positionBitboard -7) NOT_FILE_H))))
     (if (equal? #true color)
         (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
         (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
 
-(define (queenMoves color allPieces whitePieces blackPieces chessboardIndex)
-  (bitwise-ior (rookMoves color allPieces whitePieces blackPieces chessboardIndex) (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)))
+(define (queenMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)
+  (bitwise-ior (rookMoves color allPieces whitePieces blackPieces positionBitboard positionIndex) (bishopMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)))
 
 
 
 
-(define (rookMoves color allPieces whitePieces blackPieces chessboardIndex)
+(define (rookMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex)))
-    (define horizontalMoves
-      (bitwise-xor (- allPieces (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary allPieces) (* 2 (reverseBinary binaryPosition))))))
-    (define verticalMoves
-      (bitwise-xor (- (bitwise-and allPieces (vector-ref FILEMASKS (modulo chessboardIndex 8))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref FILEMASKS (modulo chessboardIndex 8)))) (* 2 (reverseBinary binaryPosition))))))
-    (define moves
-      (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ chessboardIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo chessboardIndex 8))))))
+    ((define horizontalMoves
+       (bitwise-xor (- allPieces (* 2 positionBitboard))
+                    (reverseBinary (- (reverseBinary allPieces) (* 2 (reverseBinary positionBitboard))))))
+     (define verticalMoves
+       (bitwise-xor (- (bitwise-and allPieces (vector-ref FILEMASKS (modulo positionIndex 8))) (* 2 positionBitboard))
+                    (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref FILEMASKS (modulo positionIndex 8)))) (* 2 (reverseBinary positionBitboard))))))
+     (define moves
+       (bitwise-ior (bitwise-and horizontalMoves (vector-ref RANKMASKS (floor (/ positionIndex 8)))) (bitwise-and verticalMoves (vector-ref FILEMASKS (modulo positionIndex 8))))))
+     (if (equal? #true color)
+         (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
+         (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
+
+
+(define (bishopMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)
+  (local
+    ((define DiagonalMoves
+       (bitwise-xor (- (bitwise-and allPieces (vector-ref DIAGONALMASKS (+ (floor (/ positionIndex 8)) (modulo positionIndex 8)))) (* 2 positionBitboard))
+                    (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref DIAGONALMASKS (+ (floor (/ positionIndex 8)) (modulo positionIndex 8))))) (* 2 (reverseBinary positionBitboard))))))
+     (define AntiDiagonalMoves
+       (bitwise-xor (- (bitwise-and allPieces (vector-ref ANTIDIAGONALMASKS (+ (floor (/ positionIndex 8)) (- 7 (modulo positionIndex 8))))) (* 2 positionBitboard))
+                    (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref ANTIDIAGONALMASKS (+ (floor (/ positionIndex 8)) (- 7 (modulo positionIndex 8)))))) (* 2 (reverseBinary positionBitboard))))))
+     (define moves
+       (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ positionIndex 8)) (modulo positionIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ positionIndex 8)) (- 7 (modulo positionIndex 8))))))))
     (if (equal? #true color)
         (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
         (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
 
 
-(define (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)
+(define (knightMoves color whitePieces blackPieces positionBitboard)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex)))
-    (define DiagonalMoves
-      (bitwise-xor (- (bitwise-and allPieces (vector-ref DIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8)))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref DIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8))))) (* 2 (reverseBinary binaryPosition))))))
-    (define AntiDiagonalMoves
-      (bitwise-xor (- (bitwise-and allPieces (vector-ref ANTIDIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (- 7 (modulo chessboardIndex 8))))) (* 2 binaryPosition))
-                   (reverseBinary (- (reverseBinary (bitwise-and allPieces (vector-ref ANTIDIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (- 7 (modulo chessboardIndex 8)))))) (* 2 (reverseBinary binaryPosition))))))
-    (define moves
-      (bitwise-ior (bitwise-and DiagonalMoves (vector-ref DIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8)))) (bitwise-and AntiDiagonalMoves (vector-ref ANTIDIAGONALMASKS (+ (floor (/ chessboardIndex 8)) (- 7 (modulo chessboardIndex 8))))))))
-    (if (equal? #true color)
-        (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
-        (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
-
-
-(define (knightMoves color whitePieces blackPieces chessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex)))
-    (define moves
-     (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition  10) NOT_FILE_GH)
-     (bitwise-and (arithmetic-shift binaryPosition  17) NOT_FILE_H)
-     (bitwise-and (arithmetic-shift binaryPosition  15) NOT_FILE_A)
-     (bitwise-and (arithmetic-shift binaryPosition  6)  NOT_FILE_AB)
-     (bitwise-and (arithmetic-shift binaryPosition -10) NOT_FILE_AB)
-     (bitwise-and (arithmetic-shift binaryPosition -17) NOT_FILE_A)
-     (bitwise-and (arithmetic-shift binaryPosition -15) NOT_FILE_H)
-     (bitwise-and (arithmetic-shift binaryPosition -6)  NOT_FILE_GH))))
+    ((define moves
+       (bitwise-ior
+       (bitwise-and (arithmetic-shift positionBitboard  10) NOT_FILE_GH)
+       (bitwise-and (arithmetic-shift positionBitboard  17) NOT_FILE_H)
+       (bitwise-and (arithmetic-shift positionBitboard  15) NOT_FILE_A)
+       (bitwise-and (arithmetic-shift positionBitboard  6)  NOT_FILE_AB)
+       (bitwise-and (arithmetic-shift positionBitboard -10) NOT_FILE_AB)
+       (bitwise-and (arithmetic-shift positionBitboard -17) NOT_FILE_A)
+       (bitwise-and (arithmetic-shift positionBitboard -15) NOT_FILE_H)
+       (bitwise-and (arithmetic-shift positionBitboard -6)  NOT_FILE_GH))))
     (if (equal? #true color)
         (bitwise-and moves (bitwise-not (bitwise-and moves whitePieces)))
         (bitwise-and moves (bitwise-not (bitwise-and moves blackPieces))))))
@@ -590,50 +602,23 @@
 
 
 
-(define (PawnMoves color allPieces whitePieces blackPieces chessboardIndex)
+(define (PawnMoves color allPieces whitePieces blackPieces positionBitboard)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex)))
-    (define whiteMoves
-     (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8 blackPieces)
-     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8 blackPieces)
-     (bitwise-and (arithmetic-shift binaryPosition 8) (bitwise-not allPieces) NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4)))
-    (define blackMoves
-     (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1 whitePieces)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1 whitePieces)
-     (bitwise-and (arithmetic-shift binaryPosition -8) (bitwise-not allPieces) NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))))
+    ((define whiteMoves
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionBitboard 9) NOT_FILE_H NOT_RANK_8 blackPieces)
+        (bitwise-and (arithmetic-shift positionBitboard 7) NOT_FILE_A NOT_RANK_8 blackPieces)
+        (bitwise-and (arithmetic-shift positionBitboard 8) (bitwise-not allPieces) NOT_RANK_8)
+        (bitwise-and (arithmetic-shift positionBitboard 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4)))
+     (define blackMoves
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionBitboard -9) NOT_FILE_A NOT_RANK_1 whitePieces)
+        (bitwise-and (arithmetic-shift positionBitboard -7) NOT_FILE_H NOT_RANK_1 whitePieces)
+        (bitwise-and (arithmetic-shift positionBitboard -8) (bitwise-not allPieces) NOT_RANK_1)
+        (bitwise-and (arithmetic-shift positionBitboard -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))))
     (if (equal? #true color)
         (bitwise-and whiteMoves (bitwise-not (bitwise-and whiteMoves whitePieces)))
         (bitwise-and blackMoves (bitwise-not (bitwise-and blackMoves blackPieces))))))
-
-
-
-
-(define (whitePawnMoves allPieces chessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 8) (bitwise-not allPieces) NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4))))
-
-(define (blackPawnMoves allPieces chessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -8) (bitwise-not allPieces) NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))))
-
-
     
 ;=============================================================================================
 
@@ -909,10 +894,14 @@
        (currentMove-type (worldState-currentMove worldState)))
      (define color
        (currentMove-color (worldState-currentMove worldState)))
-     (define start
-       (currentMove-start (worldState-currentMove worldState)))
-     (define end
-       (currentMove-end (worldState-currentMove worldState)))
+     (define startPositionIndex
+       (+ (floor (/ (posn-x (currentMove-start (worldState-currentMove worldState))) SQUARE_SIDE)) (* 8 (floor (/ (posn-y (currentMove-start (worldState-currentMove worldState))) SQUARE_SIDE)))))
+     (define startPositionBitboard
+       (arithmetic-shift 1 (- 63 startPositionIndex)))
+     (define endPositionIndex
+       (+ (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (* 8 (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)))))
+     (define endPositionBitboard
+       (arithmetic-shift 1 (- 63 endPositionIndex)))
      (define allPieces
       (bitwise-xor
         (dict-ref bitboards "K")
@@ -945,12 +934,12 @@
         (dict-ref bitboards "p"))))
      (if (currentMove? (worldState-currentMove worldState))
         (cond
-          [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece type color (startIndex start) allPieces whitePieces blackPieces)
-                                                    (arithmetic-shift 1 (- 63 (endIndex end))))
-                                       (- (endIndex end) 63)))
-           (make-worldState (drawPieces (bitboardsToChessboard (updateBitboards bitboards type start end)))
-                            (bitboardsToChessboard (updateBitboards bitboards type start end))
-                            (updateBitboards bitboards type start end)
+          [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece type color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces)
+                                                    endPositionBitboard)
+                                       (- endPositionIndex 63)))
+           (make-worldState (drawPieces (bitboardsToChessboard (updateBitboards bitboards type startPositionBitboard endPositionBitboard)))
+                            (bitboardsToChessboard (updateBitboards bitboards type startPositionBitboard endPositionBitboard))
+                            (updateBitboards bitboards type startPositionBitboard endPositionBitboard)
                             #false
                             (worldState-quit worldState))]
           [else
@@ -966,14 +955,14 @@
                          (worldState-currentMove worldState)
                          (worldState-quit worldState)))))
 
-(define (updateBitboards bitboards type start end)
-  (updateEndSquare (updateStartSquare bitboards type start) type end))
+(define (updateBitboards bitboards type startPositionBitboard endPositionBitboard)
+  (updateEndSquare (updateStartSquare bitboards type startPositionBitboard) type endPositionBitboard))
 
-(define (updateStartSquare bitboards type start)
-  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) (arithmetic-shift 1 (- 63 (startIndex start))))))
+(define (updateStartSquare bitboards type startPositionBitboard)
+  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) startPositionBitboard)))
 
-(define (updateEndSquare bitboards type end)
-  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) (arithmetic-shift 1 (- 63 (endIndex end))))))
+(define (updateEndSquare bitboards type endPositionBitboard)
+  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) endPositionBitboard)))
 
 ;(define (capturedPiece worldState)
 ;       (chessboardGet (worldState-chessboard worldState) (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE))))
@@ -981,25 +970,20 @@
 ;                      (dict-set BITBOARDS (capturedPiece worldState) (bitwise-xor (dict-ref BITBOARDS capturedPiece (arithmetic-shift 1 (- 63 (endIndex worldState))))))
 ;                      (void)))
 
-(define (startIndex start)
-  (+ (floor (/ (posn-x start) SQUARE_SIDE)) (* 8 (floor (/ (posn-y start) SQUARE_SIDE)))))
-(define (endIndex end)
-  (+ (floor (/ (posn-x end) SQUARE_SIDE)) (* 8 (floor (/ (posn-y end) SQUARE_SIDE)))))
-
-(define (getMovesPiece type color chessboardIndex allPieces whitePieces blackPieces)
+(define (getMovesPiece type color positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
     [(or (equal? "K" type) (equal? "k" type))
-             (kingMoves color whitePieces blackPieces chessboardIndex)]
+             (kingMoves color whitePieces blackPieces positionBitboard)]
     [(or (equal? "Q" type) (equal? "q" type))
-             (queenMoves color allPieces whitePieces blackPieces chessboardIndex)]
+             (queenMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)]
     [(or (equal? "R" type) (equal? "r" type))
-             (rookMoves color allPieces whitePieces blackPieces chessboardIndex)]
+             (rookMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)]
     [(or (equal? "B" type) (equal? "b" type))
-             (bishopMoves color allPieces whitePieces blackPieces chessboardIndex)]
+             (bishopMoves color allPieces whitePieces blackPieces positionBitboard positionIndex)]
     [(or (equal? "N" type) (equal? "n" type))
-             (knightMoves color whitePieces blackPieces chessboardIndex)]
+             (knightMoves color whitePieces blackPieces positionBitboard)]
     [(or (equal? "P" type) (equal? "p" type))
-             (PawnMoves color allPieces whitePieces blackPieces chessboardIndex)]))
+             (PawnMoves color allPieces whitePieces blackPieces positionBitboard)]))
 
 
 
