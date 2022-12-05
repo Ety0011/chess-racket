@@ -100,20 +100,20 @@
 ;  Interpretation: A dictionary is an instance of a datatype that maps keys to values. 
 ;  The names are based on the type of piece and on its color. "WK" is the white king
 ;  Assign uppercase letter to white pieces, and lower case letter to black pieces
-(define BITBOARDS (make-hash))
-(dict-set! BITBOARDS "K" 0)
-(dict-set! BITBOARDS "Q" 0)
-(dict-set! BITBOARDS "R" 0)
-(dict-set! BITBOARDS "B" 0)
-(dict-set! BITBOARDS "N" 0)
-(dict-set! BITBOARDS "P" 0)
-(dict-set! BITBOARDS "k" 0)
-(dict-set! BITBOARDS "q" 0)
-(dict-set! BITBOARDS "r" 0)
-(dict-set! BITBOARDS "b" 0)
-(dict-set! BITBOARDS "n" 0)
-(dict-set! BITBOARDS "p" 0)
-
+(define BITBOARDS
+       (list
+        (cons "K" 0)
+        (cons "Q" 0)
+        (cons "R" 0)
+        (cons "B" 0)
+        (cons "N" 0)
+        (cons "P" 0)
+        (cons "k" 0)
+        (cons "q" 0)
+        (cons "r" 0)
+        (cons "b" 0)
+        (cons "n" 0)
+        (cons "p" 0)))
 
 ; =========
 ; Functions
@@ -138,10 +138,158 @@
 ; chessboardSet: Chessboard Number Number -> Void
 ; Intepretation: takes the coordinates of 'row' and 'column' of a 'chessboard' to update the stored value in the corresponding element with 'value' and returns nothing
 ; Header: (define (chessboardSet matrix row col value))
+; Additional infos: not in library, adapted from https://stackoverflow.com/questions/38421007/update-element-of-immutable-vector-vector-set
 
 ; Implementation
-(define (chessboardSet matrix row col value)
-  (vector-set! (vector-ref matrix row) col value))
+(define (chessboardSet chessboard row column value)
+   (for/vector ([j (in-range (vector-length chessboard))])
+     (for/vector ([k (in-range (vector-length (vector-ref chessboard j)))])
+       (if (and (= j row) (= k column))
+           value
+           (vector-ref (vector-ref chessboard j) k)))))
+
+
+; Signature
+; chessboardToBitboards: Chessboard -> Dictionary<Bitboard>
+; Interpretation: assignes every piece in the chessboard to the corresponding "1" in the bitboards. Both boards are accessed with chessboardIndex which is a number that ranges from 0 to 63
+; Header: (define (chessboardToBitboards chessboard) BITBOARDS_OF_STANDARD_CHESSBOARD)
+
+; Examples
+(define BITBOARDS_OF_STANDARD_CHESSBOARD
+       (list
+        (cons "K" 8)
+        (cons "Q" 16)
+        (cons "R" 129)
+        (cons "B" 36)
+        (cons "N" 66)
+        (cons "P" 65280)
+        (cons "k" 576460752303423488)
+        (cons "q" 1152921504606846976)
+        (cons "r" 9295429630892703744)
+        (cons "b" 2594073385365405696)
+        (cons "n" 4755801206503243776)
+        (cons "p" 71776119061217280)))
+
+; Checks
+(check-expect (chessboardToBitboards STANDARD_CHESSBOARD) BITBOARDS_OF_STANDARD_CHESSBOARD)
+
+; Implementation
+(define (chessboardToBitboards chessboard)
+  (local
+    ((define newBitboards
+       (list
+        (cons "K" 0)
+        (cons "Q" 0)
+        (cons "R" 0)
+        (cons "B" 0)
+        (cons "N" 0)
+        (cons "P" 0)
+        (cons "k" 0)
+        (cons "q" 0)
+        (cons "r" 0)
+        (cons "b" 0)
+        (cons "n" 0)
+        (cons "p" 0)))
+     ; Chessboard -> String
+     (define (getPiece chessboardIndex)
+       (chessboardGet chessboard (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8)))
+     ; Dictionary<Bitboard> -> Dictionary<Bitboard>
+     (define (writeBitBoard bitboards bitboard chessboardIndex)
+       (chessboardToBitboardsAcc (dict-set bitboards bitboard (+ (dict-ref bitboards bitboard) (arithmetic-shift 1 (- 63 chessboardIndex)))) (add1 chessboardIndex)))
+     ; Chessboard Accumulator -> Dictionary<Bitboard>
+     (define (chessboardToBitboardsAcc bitboards chessboardIndex)
+       (if (equal? 64 chessboardIndex) bitboards
+           (cond
+             [(equal? "K" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "K" chessboardIndex)]
+             [(equal? "Q" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "Q" chessboardIndex)]
+             [(equal? "R" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "R" chessboardIndex)]
+             [(equal? "B" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "B" chessboardIndex)]
+             [(equal? "N" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "N" chessboardIndex)]
+             [(equal? "P" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "P" chessboardIndex)]
+             [(equal? "k" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "k" chessboardIndex)]
+             [(equal? "q" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "q" chessboardIndex)]
+             [(equal? "r" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "r" chessboardIndex)]
+             [(equal? "b" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "b" chessboardIndex)]
+             [(equal? "n" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "n" chessboardIndex)]
+             [(equal? "p" (getPiece chessboardIndex))
+              (writeBitBoard bitboards "p" chessboardIndex)]
+             [(equal? " " (getPiece chessboardIndex))
+              (chessboardToBitboardsAcc bitboards (add1 chessboardIndex))]))))
+    (chessboardToBitboardsAcc newBitboards 0)))
+
+
+; Signature
+; bitboardsToChessboard: Dictionary<Bitboard> -> Chessboard
+; Interpretation: assignes every "1" in the bitboards to the corresponding piece of the chessboard. Both boards are accessed with chessboardIndex which is a number that ranges from 0 to 63
+; Header (define (bitboardsToChessboard chessboard)
+
+; Examples
+; STANDARD_CHESSBOARD
+
+; Checks
+(check-expect (bitboardsToChessboard BITBOARDS_OF_STANDARD_CHESSBOARD) STANDARD_CHESSBOARD)
+
+; Implementation
+(define (bitboardsToChessboard bitboards)
+  (local
+    ((define newChessboard
+       (vector
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")
+        (vector " " " " " " " " " " " " " " " ")))
+     ; Bitboard -> Number
+     (define (getBit bitboard chessboardIndex)
+       (bitwise-and 1 (arithmetic-shift (dict-ref bitboards bitboard) (- chessboardIndex 63))))
+     ; Chessboard -> Chessboard
+     (define (writeChessBoard chessboard chessboardIndex value)
+       (bitboardsToChessboardAcc (chessboardSet chessboard (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8) value) (add1 chessboardIndex)))
+     ; Dictionary<Bitboard> Accumulator -> Chessboard
+     (define (bitboardsToChessboardAcc chessboard chessboardIndex)
+       (if (equal? 64 chessboardIndex) chessboard
+           (cond
+             [(equal? 1 (getBit "K" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "K")]
+             [(equal? 1 (getBit "Q" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "Q")]
+             [(equal? 1 (getBit "R" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "R")]
+             [(equal? 1 (getBit "B" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "B")]
+             [(equal? 1 (getBit "N" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "N")]
+             [(equal? 1 (getBit "P" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "P")]
+             [(equal? 1 (getBit "k" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "k")]
+             [(equal? 1 (getBit "q" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "q")]
+             [(equal? 1 (getBit "r" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "r")]
+             [(equal? 1 (getBit "b" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "b")]
+             [(equal? 1 (getBit "n" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "n")]
+             [(equal? 1 (getBit "p" chessboardIndex))
+              (writeChessBoard chessboard chessboardIndex "p")]
+             [else
+              (writeChessBoard chessboard chessboardIndex " ")]))))
+    (bitboardsToChessboardAcc newChessboard 0)))
 
 
 ; Signature
@@ -205,201 +353,43 @@
     (drawPiecesAcc chessboard 0)))
 
 
-; TO IMPROVE
-;===================================================
-;(define (checkChessboardSet chessboard counter)
-;  (cond
-;    [(equal? 1 counter)
-;     chessboard]
-;    [else
-;     (begin (chessboardSet chessboard 0 0 "JESUS"))
-;     (begin (checkChessboardSet chessboard (add1 counter)))]))
-
-;(check-expect (checkChessboardSet EMPTY_CHESSBOARD 0)
-;              (vector
-;   (vector "JESUS" " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")
-;   (vector " " " " " " " " " " " " " " " ")))
-;===================================================
-
-
-; Signature
-; chessboardToBitboards: Chessboard -> Dictionary<Bitboard>
-; Interpretation: assignes every piece in the chessboard to the corresponding "1" in the bitboards. Both boards are accessed with chessboardIndex which is a number that ranges from 0 to 63
-; Header: (define (chessboardToBitboards chessboard) BITBOARDS_OF_STANDARD_CHESSBOARD)
-
-; Examples
-(define BITBOARDS_OF_STANDARD_CHESSBOARD (make-hash))
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "K" 8)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "Q" 16)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "R" 129)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "B" 36)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "N" 66)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "P" 65280)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "k" 576460752303423488)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "q" 1152921504606846976)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "r" 9295429630892703744)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "b" 2594073385365405696)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "n" 4755801206503243776)
-(dict-set! BITBOARDS_OF_STANDARD_CHESSBOARD "p" 71776119061217280)
-
-; Checks
-;(check-expect (chessboardToBitboards STANDARD_CHESSBOARD) BITBOARDS_OF_STANDARD_CHESSBOARD)
 
 
 
 
-(define (vector-set v i o)
-  (vector->immutable-vector
-   (for/vector ([j (in-range (vector-length v))])
-     (if (= i j)
-         o
-         (vector-ref v j)))))
-
-(define a (vector 1 2 3))
 
 
 
-; Implementation
-(define (chessboardToBitboards chessboard)
-  (local
-    (; Dictionary<Bitboard> -> Dictionary<Bitboard>
-     (define newBitboards
-       (list
-        (cons "K" 0)
-        (cons "Q" 0)
-        (cons "R" 0)
-        (cons "B" 0)
-        (cons "N" 0)
-        (cons "P" 0)
-        (cons "k" 0)
-        (cons "q" 0)
-        (cons "r" 0)
-        (cons "b" 0)
-        (cons "n" 0)
-        (cons "p" 0)))
-     ; Chessboard -> String
-     (define (getPiece chessboardIndex)
-       (chessboardGet chessboard (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8)))
-     ; Bitboard -> Void
-     ; Interpretation: updates value of the chosen bitboard and returns nothing)
-     (define (writeBitBoard bitboards bitboard chessboardIndex)
-       (chessboardToBitboardsAcc (dict-set bitboards bitboard (+ (dict-ref bitboards bitboard) (arithmetic-shift 1 (- 63 chessboardIndex)))) (add1 chessboardIndex)))
-     ; Chessboard Accumulator -> Dictionary<Bitboard>
-     ; Interpretation: updates all the values of the bitboards and returns nothing
-     (define (chessboardToBitboardsAcc bitboards chessboardIndex)
-       (if (equal? 64 chessboardIndex) bitboards
-           (cond
-             [(equal? "K" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "K" chessboardIndex)]
-             [(equal? "Q" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "Q" chessboardIndex)]
-             [(equal? "R" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "R" chessboardIndex)]
-             [(equal? "B" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "B" chessboardIndex)]
-             [(equal? "N" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "N" chessboardIndex)]
-             [(equal? "P" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "P" chessboardIndex)]
-             [(equal? "k" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "k" chessboardIndex)]
-             [(equal? "q" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "q" chessboardIndex)]
-             [(equal? "r" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "r" chessboardIndex)]
-             [(equal? "b" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "b" chessboardIndex)]
-             [(equal? "n" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "n" chessboardIndex)]
-             [(equal? "p" (getPiece chessboardIndex))
-              (writeBitBoard bitboards "p" chessboardIndex)]
-             [(equal? " " (getPiece chessboardIndex))
-              (chessboardToBitboardsAcc newBitboards (add1 chessboardIndex))]))))
-    (chessboardToBitboardsAcc newBitboards 0)))
-
-
-  
-; get the different bits (strings) representing the pieces from chessboardIndex and write the chessboard using said bits
-
-; Signature
-; bitboardsToChessboard: Chessboard -> Chessboard
-; Interpretation: assignes every "1" in the bitboards to the corresponding piece of the chessboard. Both boards are accessed with chessboardIndex which is a number that ranges from 0 to 63
-; Header (define (bitboardsToChessboard chessboard)
-
-; Examples
-; STANDARD_CHESSBOARD
-
-; Checks
-(check-expect (bitboardsToChessboard BITBOARDS_OF_STANDARD_CHESSBOARD) STANDARD_CHESSBOARD)
-
-; Implementation
-(define (bitboardsToChessboard bitboards)
-  (local
-    ((define newChessboard
-       (vector
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")
-        (vector " " " " " " " " " " " " " " " ")))
-     (define (getBit bitboard chessboardIndex)
-       (bitwise-and 1 (arithmetic-shift (dict-ref bitboards bitboard) (- chessboardIndex 63))))
-     (define (writeChessBoard chessboard chessboardIndex value)
-       (begin (chessboardSet chessboard (floor (/ chessboardIndex 8)) (modulo chessboardIndex 8) value)
-              (bitboardsToChessboardAcc chessboard (add1 chessboardIndex))))
-     (define (bitboardsToChessboardAcc chessboard chessboardIndex)
-       (if (equal? 64 chessboardIndex) chessboard
-           (cond
-             [(equal? 1 (getBit "K" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "K")]
-             [(equal? 1 (getBit "Q" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "Q")]
-             [(equal? 1 (getBit "R" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "R")]
-             [(equal? 1 (getBit "B" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "B")]
-             [(equal? 1 (getBit "N" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "N")]
-             [(equal? 1 (getBit "P" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "P")]
-             [(equal? 1 (getBit "k" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "k")]
-             [(equal? 1 (getBit "q" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "q")]
-             [(equal? 1 (getBit "r" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "r")]
-             [(equal? 1 (getBit "b" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "b")]
-             [(equal? 1 (getBit "n" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "n")]
-             [(equal? 1 (getBit "p" chessboardIndex))
-              (writeChessBoard chessboard chessboardIndex "p")]
-             [else
-              (writeChessBoard chessboard chessboardIndex " ")]))))
-    (bitboardsToChessboardAcc newChessboard 0)))
 
 
 
-;; allow the chessboard to be converted from a matrix to a bitboard
 
-(chessboardToBitboards STANDARD_CHESSBOARD)
-(bitboardsToChessboard BITBOARDS_OF_STANDARD_CHESSBOARD)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 (define (printBitboard2 bitboard chessboardIndex)
   (cond
     [(equal? 8 chessboardIndex) (void)]
     [else
-     (;begin (writeln (~r (bitwise-and (arithmetic-shift bitboard (* -8 (- 7 chessboardIndex))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0"))
+     (begin (writeln (~r (bitwise-and (arithmetic-shift bitboard (* -8 (- 7 chessboardIndex))) #b11111111) #:base 2 #:min-width 8 #:pad-string "0"))
             (printBitboard2 bitboard (add1 chessboardIndex)))]))
 
 (define (printBitboard bitboard)
@@ -913,48 +903,56 @@
 
 (define (makeMove worldState)
   (local
-    ((define allPieces
+    ((define bitboards
+       (worldState-bitboards worldState))
+     (define type
+       (currentMove-type (worldState-currentMove worldState)))
+     (define color
+       (currentMove-color (worldState-currentMove worldState)))
+     (define start
+       (currentMove-start (worldState-currentMove worldState)))
+     (define end
+       (currentMove-end (worldState-currentMove worldState)))
+     (define allPieces
       (bitwise-xor
-        (dict-ref BITBOARDS "K")
-        (dict-ref BITBOARDS "Q")
-        (dict-ref BITBOARDS "R")
-        (dict-ref BITBOARDS "B")
-        (dict-ref BITBOARDS "N")
-        (dict-ref BITBOARDS "P")
-        (dict-ref BITBOARDS "k")
-        (dict-ref BITBOARDS "q")
-        (dict-ref BITBOARDS "r")
-        (dict-ref BITBOARDS "b")
-        (dict-ref BITBOARDS "n")
-        (dict-ref BITBOARDS "p")))
+        (dict-ref bitboards "K")
+        (dict-ref bitboards "Q")
+        (dict-ref bitboards "R")
+        (dict-ref bitboards "B")
+        (dict-ref bitboards "N")
+        (dict-ref bitboards "P")
+        (dict-ref bitboards "k")
+        (dict-ref bitboards "q")
+        (dict-ref bitboards "r")
+        (dict-ref bitboards "b")
+        (dict-ref bitboards "n")
+        (dict-ref bitboards "p")))
      (define whitePieces
        (bitwise-xor
-        (dict-ref BITBOARDS "K")
-        (dict-ref BITBOARDS "Q")
-        (dict-ref BITBOARDS "R")
-        (dict-ref BITBOARDS "B")
-        (dict-ref BITBOARDS "N")
-        (dict-ref BITBOARDS "P")))
+        (dict-ref bitboards "K")
+        (dict-ref bitboards "Q")
+        (dict-ref bitboards "R")
+        (dict-ref bitboards "B")
+        (dict-ref bitboards "N")
+        (dict-ref bitboards "P")))
      (define blackPieces
        (bitwise-xor
-        (dict-ref BITBOARDS "k")
-        (dict-ref BITBOARDS "q")
-        (dict-ref BITBOARDS "r")
-        (dict-ref BITBOARDS "b")
-        (dict-ref BITBOARDS "n")
-        (dict-ref BITBOARDS "p"))))
+        (dict-ref bitboards "k")
+        (dict-ref bitboards "q")
+        (dict-ref bitboards "r")
+        (dict-ref bitboards "b")
+        (dict-ref bitboards "n")
+        (dict-ref bitboards "p"))))
      (if (currentMove? (worldState-currentMove worldState))
         (cond
-          [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece (currentMove-type (worldState-currentMove worldState)) (currentMove-color (worldState-currentMove worldState)) (startIndex worldState) allPieces whitePieces blackPieces) (arithmetic-shift 1 (- 63 (endIndex worldState)))) (- (endIndex worldState) 63)))
-           (begin (dict-set! BITBOARDS (currentMove-type (worldState-currentMove worldState)) (bitwise-xor (dict-ref BITBOARDS (currentMove-type (worldState-currentMove worldState))) (arithmetic-shift 1 (- 63 (startIndex worldState)))))
-                  (dict-set! BITBOARDS (currentMove-type (worldState-currentMove worldState)) (bitwise-xor (dict-ref BITBOARDS (currentMove-type (worldState-currentMove worldState))) (arithmetic-shift 1 (- 63 (endIndex worldState))))))
-
-           (begin (bitboardsToChessboard (worldState-chessboard worldState))
-                  (make-worldState (drawPieces (worldState-chessboard worldState))
-                                   (worldState-chessboard worldState)
-                                   (worldState-bitboards worldState)
-                                   #false
-                                   (worldState-quit worldState)))]
+          [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece type color (startIndex start) allPieces whitePieces blackPieces)
+                                                    (arithmetic-shift 1 (- 63 (endIndex end))))
+                                       (- (endIndex end) 63)))
+           (make-worldState (drawPieces (bitboardsToChessboard (updateBitboards bitboards type start end)))
+                            (bitboardsToChessboard (updateBitboards bitboards type start end))
+                            (updateBitboards bitboards type start end)
+                            #false
+                            (worldState-quit worldState))]
           [else
            (make-worldState (drawPieces (worldState-chessboard worldState))
                             (worldState-chessboard worldState)
@@ -968,18 +966,25 @@
                          (worldState-currentMove worldState)
                          (worldState-quit worldState)))))
 
-(define (startIndex worldState)
-  (+ (floor (/ (posn-x (currentMove-start (worldState-currentMove worldState))) SQUARE_SIDE)) (* 8 (floor (/ (posn-y (currentMove-start (worldState-currentMove worldState))) SQUARE_SIDE)))))
-(define (endIndex worldState)
-  (+ (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (* 8 (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)))))
-(define (capturedPiece worldState)
-       (chessboardGet (worldState-chessboard worldState) (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE))))
+(define (updateBitboards bitboards type start end)
+  (updateEndSquare (updateStartSquare bitboards type start) type end))
 
+(define (updateStartSquare bitboards type start)
+  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) (arithmetic-shift 1 (- 63 (startIndex start))))))
 
+(define (updateEndSquare bitboards type end)
+  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) (arithmetic-shift 1 (- 63 (endIndex end))))))
+
+;(define (capturedPiece worldState)
+;       (chessboardGet (worldState-chessboard worldState) (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE))))
 ;(begin (if (not (equal? " " (capturedPiece worldState)))
-;                      (dict-set! BITBOARDS (capturedPiece worldState) (bitwise-xor (dict-ref BITBOARDS capturedPiece (arithmetic-shift 1 (- 63 (endIndex worldState))))))
+;                      (dict-set BITBOARDS (capturedPiece worldState) (bitwise-xor (dict-ref BITBOARDS capturedPiece (arithmetic-shift 1 (- 63 (endIndex worldState))))))
 ;                      (void)))
 
+(define (startIndex start)
+  (+ (floor (/ (posn-x start) SQUARE_SIDE)) (* 8 (floor (/ (posn-y start) SQUARE_SIDE)))))
+(define (endIndex end)
+  (+ (floor (/ (posn-x end) SQUARE_SIDE)) (* 8 (floor (/ (posn-y end) SQUARE_SIDE)))))
 
 (define (getMovesPiece type color chessboardIndex allPieces whitePieces blackPieces)
   (cond
@@ -997,6 +1002,12 @@
              (PawnMoves color allPieces whitePieces blackPieces chessboardIndex)]))
 
 
+
+
+
+
+
+; TEST SECTION
 (define testState (make-worldState
                         (drawPieces EMPTY_CHESSBOARD)
                         EMPTY_CHESSBOARD
@@ -1008,23 +1019,6 @@
                          (make-posn 25 650)
                          (make-posn 25 550))
                         #false))
- 
-;(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState) 0 11)) (arithmetic-shift 1 (- 63 (endIndex testState)))) (- (endIndex testState) 63)))
-;"PIECEMOVES"
-;(printBitboard (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))))
-;"ACTUALMOVE"
-;(printBitboard (arithmetic-shift 1 (- 63 (endIndex testState))))
-;"AND"
-;(printBitboard (bitwise-and (getMovesPiece testState (startIndex testState) (bitboardsXOR (worldState-bitboards testState))) (arithmetic-shift 1 (- 63 (endIndex testState)))))
-
-;(kingMoves WHITE (bitboardsXOR (worldState-bitboards worldState) 0 5) blackPieces chessboardIndex)
-
-
-
-
-
-
-
 
 
 
@@ -1073,7 +1067,7 @@
 (define initialState (make-worldState
                         (drawPieces STANDARD_CHESSBOARD)
                         STANDARD_CHESSBOARD
-                        BITBOARDS
+                        (chessboardToBitboards STANDARD_CHESSBOARD)
                         #false
                         #false))
 
@@ -1085,4 +1079,4 @@
     [stop-when quit?]
     [close-on-stop #true]))
 
-;(drawing-app initialState)
+(drawing-app initialState)
