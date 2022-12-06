@@ -897,7 +897,7 @@
 
 
 
-(define (whitePawnAttacks color positionIndex)
+(define (pawnAttacks color positionIndex)
   (local
     ((define whiteAttacks
        (bitwise-ior
