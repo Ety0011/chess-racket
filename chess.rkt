@@ -954,31 +954,31 @@
 ; get rooks attacks. Takes the bitboard of all rooks of a certain color as input along with the
 ; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getRookAttacks-backend rb allPieces chessboardIndex attacks)
+(define (getRookAttacks-backend rb allPieces chessboardIndex attacks color whitePieces blackPieces positionBitboard)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift rb (- chessboardIndex 63))))
-     (getRookAttacks-backend rb allPieces (add1 chessboardIndex) (bitwise-ior attacks (rookMoves allPieces chessboardIndex)))]
+     (getRookAttacks-backend rb allPieces (add1 chessboardIndex) (bitwise-ior attacks (rookMoves color allPieces whitePieces blackPieces positionBitboard chessboardIndex)))]
     [else (getRookAttacks-backend rb allPieces (add1 chessboardIndex) attacks)]))
     
 ; get bishop attacks. Takes the bitboard of all bishops of a certain color as input along with the
 ; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getBishopAttacks-backend bb allPieces chessboardIndex attacks)
+(define (getBishopAttacks-backend bb allPieces chessboardIndex attacks color whitePieces blackPieces positionBitboard)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift bb (- chessboardIndex 63))))
-     (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves allPieces chessboardIndex)))]
+     (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves color allPieces whitePieces blackPieces positionBitboard chessboardIndex)))]
     [else (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get knights attacks. Takes the bitboard of all knights of a certain color as input along with the
 ; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getKnightAttacks-backend nb allPieces chessboardIndex attacks)
+(define (getKnightAttacks-backend nb chessboardIndex attacks color whitePieces blackPieces positionBitboard)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift nb (- chessboardIndex 63))))
-     (getKnightAttacks-backend nb allPieces (add1 chessboardIndex) (bitwise-ior attacks (knightMoves allPieces chessboardIndex)))]
+     (getKnightAttacks-backend nb allPieces (add1 chessboardIndex) (bitwise-ior attacks (knightMoves color whitePieces blackPieces positionBitboard)))]
     [else (getBishopAttacks-backend nb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get black pawn attacks. Takes the bitboard of all black pawns as input along with the bitboard
@@ -1062,6 +1062,12 @@
 ;                            it is a checkmate. This function gets called when the king is 
 ;                            detected to be in check. 
 ;                            TODO: find a way to iterate through all moves
+
+; checkmate test ;
+; iterate through all black attacks and check
+;(define (isWhiteCheckMate WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces)
+;  ())
+;;;;;;;;;;;;;;;;;;
 
 
 
