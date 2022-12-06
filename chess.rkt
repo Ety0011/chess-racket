@@ -907,52 +907,36 @@
 
 
 
-(define (whitePawnAttacks chessboardIndex)
+(define (pawnAttacks color positionIndex)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8))))
+    ((define whiteAttacks
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionIndex 9) NOT_FILE_H NOT_RANK_8)
+        (bitwise-and (arithmetic-shift positionIndex 7) NOT_FILE_A NOT_RANK_8)))
+     (define blackAttacks
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionIndex -9) NOT_FILE_A NOT_RANK_1)
+        (bitwise-and (arithmetic-shift positionIndex -7) NOT_FILE_H NOT_RANK_1))))
+    (if (equal? #true color)
+        (bitwise-and whiteAttacks 18446744073709551615)
+        (bitwise-and blackAttacks 18446744073709551615))))
 
-(define (blackPawnAttacks chessboardIndex)
-  (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
 
-;(define (whitePawnPromotion chessboardIndex)
-;  (if (equal? RANK_8 ) 
-;    (cond
-;      ;Promotion to queen 
-;      [()(make-WQ chessboardIndex)]
-;      ;Promotion to Knight
-;      [()(make-WN chessboardIndex)]
-;      ;Promotion to Rook
-;      [()(make-WR chessboardIndex)]
-;      ;Promotion to Bishop
-;      [()(make-WB chessboardIndex)]
-;    )
-;    (chessboardIndex)
+
+(define PROMOTION_MENU (rectangle 100 100 "solid" "white"))     
+
+;(define X (above (overlay WQ_IMG MENU) (overlay WR_IMG MENU)(overlay WB_IMG MENU)(overlay WN_IMG MENU)))
+
+;(define (PawnPromotion color positionIndex)
+;  (if (equal? color #true)
+;    (above (overlay WQ_IMG MENU) (overlay WR_IMG MENU)(overlay WB_IMG MENU)(overlay WN_IMG MENU))
+;  )
+;  (else 
+;    (above (overlay BQ_IMG MENU) (overlay BR_IMG MENU)(overlay BB_IMG MENU)(overlay BN_IMG MENU))
 ;  )
 ;)
-;(define (blackPawnPromotion chessboardIndex)
-;  (if (equal? RANK_1 ) 
-;    (cond
-;      ;Promotion to queen 
-;      [()(make-BQ chessboardIndex)]
-;      ;Promotion to Knight
-;      [()(make-BN chessboardIndex)]
-;      ;Promotion to Rook
-;      [()(make-BR chessboardIndex)]
-;      ;Promotion to Bishop
-;      [()(make-BB chessboardIndex)]
-;    )
-;    (chessboardIndex)
-;  )
-;)
+
+
 
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
@@ -964,31 +948,31 @@
 ; get rooks attacks. Takes the bitboard of all rooks of a certain color as input along with the
 ; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getRookAttacks-backend rb allPieces chessboardIndex attacks)
+(define (getRookAttacks-backend rb allPieces chessboardIndex attacks color whitePieces blackPieces positionBitboard)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift rb (- chessboardIndex 63))))
-     (getRookAttacks-backend rb allPieces (add1 chessboardIndex) (bitwise-ior attacks (rookMoves allPieces chessboardIndex)))]
+     (getRookAttacks-backend rb allPieces (add1 chessboardIndex) (bitwise-ior attacks (rookMoves color allPieces whitePieces blackPieces positionBitboard chessboardIndex)))]
     [else (getRookAttacks-backend rb allPieces (add1 chessboardIndex) attacks)]))
     
 ; get bishop attacks. Takes the bitboard of all bishops of a certain color as input along with the
 ; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getBishopAttacks-backend bb allPieces chessboardIndex attacks)
+(define (getBishopAttacks-backend bb allPieces chessboardIndex attacks color whitePieces blackPieces positionBitboard)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift bb (- chessboardIndex 63))))
-     (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves allPieces chessboardIndex)))]
+     (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) (bitwise-ior attacks (bishopMoves color allPieces whitePieces blackPieces positionBitboard chessboardIndex)))]
     [else (getBishopAttacks-backend bb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get knights attacks. Takes the bitboard of all knights of a certain color as input along with the
 ; bitboard of allPieces pieces, and returns a bitboard with all attacks. It works by iterating through
 ; the bitboard untill it finds a 1, and then gets all the attacks for that position. 
-(define (getKnightAttacks-backend nb allPieces chessboardIndex attacks)
+(define (getKnightAttacks-backend nb allPieces chessboardIndex attacks color whitePieces blackPieces positionBitboard)
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift nb (- chessboardIndex 63))))
-     (getKnightAttacks-backend nb allPieces (add1 chessboardIndex) (bitwise-ior attacks (knightMoves allPieces chessboardIndex)))]
+     (getKnightAttacks-backend nb allPieces (add1 chessboardIndex) (bitwise-ior attacks (knightMoves color whitePieces blackPieces positionBitboard)))]
     [else (getBishopAttacks-backend nb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get black pawn attacks. Takes the bitboard of all black pawns as input along with the bitboard
@@ -998,7 +982,7 @@
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift pb (- chessboardIndex 63))))
-     (getBPawnAttacks-backend pb allPieces (add1 chessboardIndex) (bitwise-ior attacks (blackPawnAttacks chessboardIndex)))]
+     (getBPawnAttacks-backend pb allPieces (add1 chessboardIndex) (bitwise-ior attacks (pawnAttacks #f chessboardIndex)))]
     [else (getBPawnAttacks-backend pb allPieces (add1 chessboardIndex) attacks)]))
 
 ; get white pawn attacks. Takes the bitboard of all white pawns as input along with the bitboard
@@ -1008,25 +992,24 @@
   (cond
     [(equal? 64 chessboardIndex) attacks]
     [(equal? 1 (bitwise-and 1 (arithmetic-shift pb (- chessboardIndex 63))))
-     (getWPawnAttacks-backend pb allPieces (add1 chessboardIndex) (bitwise-ior attacks (whitePawnAttacks chessboardIndex)))]
+     (getWPawnAttacks-backend pb allPieces (add1 chessboardIndex) (bitwise-ior attacks (pawnAttacks #t chessboardIndex)))]
     [else (getWPawnAttacks-backend pb allPieces (add1 chessboardIndex) attacks)]))
-
 
 ; USE THESE FUNCTIONS
 ; - rook attacks frontend
 ; Calls getRookAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getRookAttacks rookBitBoard allPieces)
-  (getRookAttacks-backend rookBitBoard allPieces 0 0))
+(define (getRookAttacks rookBitBoard allPieces color whitePieces blackPieces positionBitboard)
+  (getRookAttacks-backend rookBitBoard allPieces 0 0 color whitePieces blackPieces positionBitboard))
 
 ; - bishop attacks frontend
 ; Calls getBishopAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getBishopAttacks bishopBitBoard allPieces)
-  (getBishopAttacks-backend bishopBitBoard allPieces 0 0))
+(define (getBishopAttacks bishopBitBoard allPieces color whitePieces blackPieces positionBitboard)
+  (getBishopAttacks-backend bishopBitBoard allPieces 0 0 color whitePieces blackPieces positionBitboard))
 
 ; - knight attacks frontend
 ; Calls getKnightAttacks-backend and automatically passes the accumulators/const bitboards
-(define (getKnightAttacks knightBitBoard allPieces)
-  (getKnightAttacks-backend knightBitBoard allPieces 0 0))
+(define (getKnightAttacks knightBitBoard allPieces whitePieces blackPieces positionBitboard)
+  (getKnightAttacks-backend knightBitBoard allPieces 0 0 whitePieces blackPieces positionBitboard))
 
 ; - black pawn attacks frontend
 ; Calls getBPawnAttacks-backend and automatically passes the accumulators/const bitboards
@@ -1039,42 +1022,85 @@
   (getWPawnAttacks-backend pawnBitBoard allPieces 0 0))
 
 ;; Gets the attacks of all black pieces and returns a bitboard of the combined attacks
-(define (getBlackAttacks BR BB BN BP allPieces)
-  (bitwise-ior (bitwise-ior (getRookAttacks   BR allPieces) 
-                            (getBishopAttacks BB allPieces)) 
-               (bitwise-ior (getKnightAttacks BN allPieces) 
+(define (getBlackAttacks BR BB BN BP allPieces whitePieces blackPieces positionBitboard)
+  (bitwise-ior (bitwise-ior (getRookAttacks   BR allPieces #f whitePieces blackPieces positionBitboard) 
+                            (getBishopAttacks BB allPieces #f whitePieces blackPieces positionBitboard)) 
+               (bitwise-ior (getKnightAttacks BN allPieces #f whitePieces blackPieces positionBitboard) 
                             (getBPawnAttacks  BP allPieces)))) ; add king and queen later
 
 ;; Gets the attacks of all white pieces and returns a bitboard of the combined attacks
-(define (getWhiteAttacks WR WB WN WP allPieces)
-  (bitwise-ior (bitwise-ior (getRookAttacks   WR allPieces)
-                            (getBishopAttacks WB allPieces))
-               (bitwise-ior (getKnightAttacks WN allPieces)
+(define (getWhiteAttacks WR WB WN WP allPieces whitePieces blackPieces positionBitboard)
+  (bitwise-ior (bitwise-ior (getRookAttacks   WR allPieces #t whitePieces blackPieces positionBitboard)
+                            (getBishopAttacks WB allPieces #t whitePieces blackPieces positionBitboard))
+               (bitwise-ior (getKnightAttacks WN allPieces #t whitePieces blackPieces positionBitboard)
                             (getWPawnAttacks  WP allPieces)))) ; add king and queen later
 
 ;; Performs an and between the WK bitboard and the result of getBlackAttacks. If it returns
 ;  0 then the king is safe, else it is in check
-(define (isWhiteKingSafe WK BP BR BB BN BQ BK allPieces)
-  (local [(define blackAttacks (getBlackAttacks BR BB BN BP allPieces))] ; TODO: add king and queen later
+(define (isWhiteKingSafe WK BP BR BB BN BQ BK allPieces whitePieces blackPieces positionBitboard)
+  (local [(define blackAttacks (getBlackAttacks BR BB BN BP allPieces whitePieces blackPieces positionBitboard))] ; TODO: add king and queen later
     (if (zero? (bitwise-and WK blackAttacks)) #t 
         #f)))
 
 ;; Performs an and between the BK bitboard and the result of getWhiteAttacks. If it returns
 ;  0 then the king is safe, else it is in check
-(define (isBlackKingSafe BK WP WR WB WN WQ WK allPieces)
-  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP allPieces))] ; TODO: add king and queen later
+(define (isBlackKingSafe BK WP WR WB WN WQ WK allPieces whitePieces blackPieces positionBitboard)
+  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP allPieces whitePieces blackPieces positionBitboard))] ; TODO: add king and queen later
     (if (zero? (bitwise-and BK whiteAttacks)) #t
         #f))) 
 
-; TODO: add checkmate
-;   POSSIBLE IMPLEMENTATION: iterate trhough all possible moves for a certain color. If none of
-;                            them produce a legal move (king is unsafe in all positions) then
-;                            it is a checkmate. This function gets called when the king is 
-;                            detected to be in check. 
-;                            TODO: find a way to iterate through all moves
+; checkmate test ;
+
+; when the king is in check call this function
+; see if the king can move out to safety 
+; see if the queen can save the king, then the rook...
+; against every scenario, check for isxKingSafe
+
+;; checks if the white king can safely move (used for checkmate detection)
+(define (canWhiteKingMove WK BQ BR BB BN BP BK allPieces whitePieces blackPieces positionBitboard)
+  (local [(define kingMoves    (kingMoves #t whitePieces blackPieces positionBitboard))
+          (define blackAttacks (getBlackAttacks BR BB BN BP allPieces whitePieces blackPieces positionBitboard))]
+  (if (= kingMoves (bitwise-and kingMoves blackAttacks)) #f
+      #t)))
+
+;; checks if the black king can safely move (used for checkmate detection)
+(define (canBlackKingMove BK WQ WR WB WN WP WK allPieces whitePieces blackPieces positionBitboard)
+  (local [(define kingMoves    (kingMoves #f whitePieces blackPieces positionBitboard))
+          (define whiteAttacks (getWhiteAttacks WR WB WN WP allPieces whitePieces blackPieces positionBitboard))]
+  (if (= kingMoves (bitwise-and kingMoves whiteAttacks)) #f
+      #t)))
+
+;; checks if the white pieces can protect the white king
+(define (canWhitePiecesProtect WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard)
+  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP allPieces whitePieces blackPieces positionBitboard))
+          (define blackAttacks (getBlackAttacks BR BB BN BP allPieces whitePieces blackPieces positionBitboard))]
+  (if (zero? (bitwise-and WK (bitwise-and whiteAttacks blackAttacks))) #t 
+      #f)))
+
+(define (canBlackPiecesProtect WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard)
+  (local [(define whiteAttacks (getWhiteAttacks WR WB WN WP allPieces whitePieces blackPieces positionBitboard))
+          (define blackAttacks (getBlackAttacks BR BB BN BP allPieces whitePieces blackPieces positionBitboard))]
+  (if (zero? (bitwise-and BK (bitwise-and whiteAttacks blackAttacks))) #t 
+      #f)))
+
+(define (isWhiteKingCheckmate WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard)
+  (local [(define canKingMove     (canWhiteKingMove WK BQ BR BB BN BP BK allPieces whitePieces blackPieces positionBitboard))
+          (define canWhiteProtect (canWhitePiecesProtect WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard))]
+  (if (or canKingMove canWhiteProtect) #f
+    #t)))
+
+(define (isBlackKingCheckmate WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard)
+  (local [(define canKingMove     (canBlackKingMove WK BQ BR BB BN BP BK allPieces whitePieces blackPieces positionBitboard))
+          (define canBlackProtect (canBlackPiecesProtect WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard))]
+  (if (or canKingMove canBlackProtect) #f
+    #t)))
+;;;;;;;;;;;;;;;;;;
 
 
 
+; A CurrentMove is a Structure (make-currentMove image type color start end) where:
+; -
+(define-struct currentMove [image type color start end])
 
 
 
@@ -1413,13 +1439,6 @@
                          (make-posn 25 550))
                         #false
                         #false))
-
-
-
-
-
-
-
 
 
 
