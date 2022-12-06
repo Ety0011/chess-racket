@@ -897,23 +897,32 @@
 
 
 
-(define (whitePawnAttacks chessboardIndex)
+(define (whitePawnAttacks color positionIndex)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8))))
+    ((define whiteAttacks
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionIndex 9) NOT_FILE_H NOT_RANK_8)
+        (bitwise-and (arithmetic-shift positionIndex 7) NOT_FILE_A NOT_RANK_8)))
+     (define blackAttacks
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionIndex -9) NOT_FILE_A NOT_RANK_1)
+        (bitwise-and (arithmetic-shift positionIndex -7) NOT_FILE_H NOT_RANK_1))))
+    (if (equal? #true color)
+        (bitwise-and whiteAttacks 18446744073709551615)
+        (bitwise-and blackAttacks 18446744073709551615))))
+
+    
 
 (define (blackPawnAttacks chessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
+    
 
-(define MENU (rectangle 100 100 "solid" "white"))     
+
+(define PROMOTION_MENU (rectangle 100 100 "solid" "white"))     
+
+(define X (above (overlay WQ_IMG MENU) (overlay WR_IMG MENU)(overlay WB_IMG MENU)(overlay WN_IMG MENU)))
 
 (define (PawnPromotion color positionIndex)
   (if (equal? color #true)
