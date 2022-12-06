@@ -897,52 +897,43 @@
 
 
 
-(define (whitePawnAttacks chessboardIndex)
+(define (pawnAttacks color positionIndex)
   (local
-    ((define binaryPosition
-      (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition 9) NOT_FILE_H NOT_RANK_8)
-     (bitwise-and (arithmetic-shift binaryPosition 7) NOT_FILE_A NOT_RANK_8))))
+    ((define whiteAttacks
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionIndex 9) NOT_FILE_H NOT_RANK_8)
+        (bitwise-and (arithmetic-shift positionIndex 7) NOT_FILE_A NOT_RANK_8)))
+     (define blackAttacks
+       (bitwise-ior
+        (bitwise-and (arithmetic-shift positionIndex -9) NOT_FILE_A NOT_RANK_1)
+        (bitwise-and (arithmetic-shift positionIndex -7) NOT_FILE_H NOT_RANK_1))))
+    (if (equal? #true color)
+        (bitwise-and whiteAttacks 18446744073709551615)
+        (bitwise-and blackAttacks 18446744073709551615))))
+
+    
 
 (define (blackPawnAttacks chessboardIndex)
   (local
     ((define binaryPosition
       (arithmetic-shift 1 (- 63 chessboardIndex))))
-    (bitwise-ior
-     (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
-     (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
+    
 
-;(define (whitePawnPromotion chessboardIndex)
-;  (if (equal? RANK_8 ) 
-;    (cond
-;      ;Promotion to queen 
-;      [()(make-WQ chessboardIndex)]
-;      ;Promotion to Knight
-;      [()(make-WN chessboardIndex)]
-;      ;Promotion to Rook
-;      [()(make-WR chessboardIndex)]
-;      ;Promotion to Bishop
-;      [()(make-WB chessboardIndex)]
-;    )
-;    (chessboardIndex)
-;  )
-;)
-;(define (blackPawnPromotion chessboardIndex)
-;  (if (equal? RANK_1 ) 
-;    (cond
-;      ;Promotion to queen 
-;      [()(make-BQ chessboardIndex)]
-;      ;Promotion to Knight
-;      [()(make-BN chessboardIndex)]
-;      ;Promotion to Rook
-;      [()(make-BR chessboardIndex)]
-;      ;Promotion to Bishop
-;      [()(make-BB chessboardIndex)]
-;    )
-;    (chessboardIndex)
-;  )
-;)
+
+(define PROMOTION_MENU (rectangle 100 100 "solid" "white"))     
+
+(define X (above (overlay WQ_IMG MENU) (overlay WR_IMG MENU)(overlay WB_IMG MENU)(overlay WN_IMG MENU)))
+
+(define (PawnPromotion color positionIndex)
+  (if (equal? color #true)
+    (above (overlay WQ_IMG MENU) (overlay WR_IMG MENU)(overlay WB_IMG MENU)(overlay WN_IMG MENU))
+  )
+  (else 
+    (above (overlay BQ_IMG MENU) (overlay BR_IMG MENU)(overlay BB_IMG MENU)(overlay BN_IMG MENU))
+  )
+)
+
+
 
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
@@ -1143,7 +1134,7 @@
     [(equal? "p" piece)
      (make-currentMove BP_IMG "p" BLACK (make-posn newX newY) (make-posn newX newY))]
     [(equal? " " piece)
-     #false])))
+     (make-currentMove empty-image " " WHITE (make-posn newX newY) (make-posn newX newY))])))
 
 (define (changeMove worldState newX newY)
   (make-worldState (worldState-image worldState)
@@ -1164,7 +1155,9 @@
 
 (define (makeMove worldState)
   (local
-    ((define bitboards
+    ((define chessboard
+       (worldState-chessboard worldState))
+     (define bitboards
        (worldState-bitboards worldState))
      (define type
        (currentMove-type (worldState-currentMove worldState)))
@@ -1178,6 +1171,8 @@
        (+ (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (* 8 (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)))))
      (define endPositionBitboard
        (arithmetic-shift 1 (- 63 endPositionIndex)))
+     (define capturedPieceType
+       (chessboardGet chessboard (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE))))
      (define allPieces
       (bitwise-xor
         (dict-ref bitboards "K")
@@ -1213,9 +1208,9 @@
           [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece type color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces)
                                                     endPositionBitboard)
                                        (- endPositionIndex 63)))
-           (make-worldState (drawPieces (bitboardsToChessboard (updateBitboards bitboards type startPositionBitboard endPositionBitboard)))
-                            (bitboardsToChessboard (updateBitboards bitboards type startPositionBitboard endPositionBitboard))
-                            (updateBitboards bitboards type startPositionBitboard endPositionBitboard)
+           (make-worldState (drawPieces (bitboardsToChessboard (updateBitboards bitboards type startPositionBitboard endPositionBitboard capturedPieceType)))
+                            (bitboardsToChessboard (updateBitboards bitboards type startPositionBitboard endPositionBitboard capturedPieceType))
+                            (updateBitboards bitboards type startPositionBitboard endPositionBitboard capturedPieceType)
                             #false
                             (worldState-quit worldState))]
           [else
@@ -1231,20 +1226,15 @@
                          (worldState-currentMove worldState)
                          (worldState-quit worldState)))))
 
-(define (updateBitboards bitboards type startPositionBitboard endPositionBitboard)
-  (updateEndSquare (updateStartSquare bitboards type startPositionBitboard) type endPositionBitboard))
+(define (updateBitboards bitboards type startPositionBitboard endPositionBitboard capturedPieceType)
+  (if (equal? " " capturedPieceType)
+      (updatePieceAtPosition (updatePieceAtPosition bitboards type startPositionBitboard) type endPositionBitboard)
+      (updatePieceAtPosition (updatePieceAtPosition (updatePieceAtPosition bitboards type startPositionBitboard) type endPositionBitboard) capturedPieceType endPositionBitboard)))
 
-(define (updateStartSquare bitboards type startPositionBitboard)
-  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) startPositionBitboard)))
+(define (updatePieceAtPosition bitboards type positionBitboard)
+  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) positionBitboard)))
 
-(define (updateEndSquare bitboards type endPositionBitboard)
-  (dict-set bitboards type (bitwise-xor (dict-ref bitboards type) endPositionBitboard)))
 
-;(define (capturedPiece worldState)
-;       (chessboardGet (worldState-chessboard worldState) (floor (/ (posn-y (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE)) (floor (/ (posn-x (currentMove-end (worldState-currentMove worldState))) SQUARE_SIDE))))
-;(begin (if (not (equal? " " (capturedPiece worldState)))
-;                      (dict-set BITBOARDS (capturedPiece worldState) (bitwise-xor (dict-ref BITBOARDS capturedPiece (arithmetic-shift 1 (- 63 (endIndex worldState))))))
-;                      (void)))
 
 (define (getMovesPiece type color positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
@@ -1259,7 +1249,8 @@
     [(or (equal? "N" type) (equal? "n" type))
              (knightMoves color whitePieces blackPieces positionBitboard)]
     [(or (equal? "P" type) (equal? "p" type))
-             (pawnMoves color allPieces whitePieces blackPieces positionBitboard)]))
+             (pawnMoves color allPieces whitePieces blackPieces positionBitboard)]
+    [else 0]))
 
 
 
@@ -1272,20 +1263,8 @@
                         (drawPieces EMPTY_CHESSBOARD)
                         EMPTY_CHESSBOARD
                         BITBOARDS
-                        (make-currentMove
-                         WP_IMG
-                         "P"
-                         WHITE
-                         (make-posn 25 650)
-                         (make-posn 25 550))
+                        #false
                         #false))
-
-
-
-
-
-
-
 
 
 
