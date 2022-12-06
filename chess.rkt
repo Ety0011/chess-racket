@@ -913,36 +913,18 @@
      (bitwise-and (arithmetic-shift binaryPosition -9) NOT_FILE_A NOT_RANK_1)
      (bitwise-and (arithmetic-shift binaryPosition -7) NOT_FILE_H NOT_RANK_1))))
 
-;(define (whitePawnPromotion chessboardIndex)
-;  (if (equal? RANK_8 ) 
-;    (cond
-;      ;Promotion to queen 
-;      [()(make-WQ chessboardIndex)]
-;      ;Promotion to Knight
-;      [()(make-WN chessboardIndex)]
-;      ;Promotion to Rook
-;      [()(make-WR chessboardIndex)]
-;      ;Promotion to Bishop
-;      [()(make-WB chessboardIndex)]
-;    )
-;    (chessboardIndex)
-;  )
-;)
-;(define (blackPawnPromotion chessboardIndex)
-;  (if (equal? RANK_1 ) 
-;    (cond
-;      ;Promotion to queen 
-;      [()(make-BQ chessboardIndex)]
-;      ;Promotion to Knight
-;      [()(make-BN chessboardIndex)]
-;      ;Promotion to Rook
-;      [()(make-BR chessboardIndex)]
-;      ;Promotion to Bishop
-;      [()(make-BB chessboardIndex)]
-;    )
-;    (chessboardIndex)
-;  )
-;)
+(define MENU (rectangle 100 100 "solid" "white"))     
+
+(define (PawnPromotion color positionIndex)
+  (if (equal? color #true)
+    (above (overlay WQ_IMG MENU) (overlay WR_IMG MENU)(overlay WB_IMG MENU)(overlay WN_IMG MENU))
+  )
+  (else 
+    (above (overlay BQ_IMG MENU) (overlay BR_IMG MENU)(overlay BB_IMG MENU)(overlay BN_IMG MENU))
+  )
+)
+
+
 
 (define (numberOfTrailingZeros bb no-zeroes)
   (if (equal? 1 (bitwise-and bb (arithmetic-shift 1 no-zeroes))) no-zeroes
