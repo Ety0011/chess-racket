@@ -1305,9 +1305,39 @@
       [(equal? #true (history-promotion (worldState-history worldState)))
        (cond
          [(equal? endPositionIndex (history-previousEndPosition (worldState-history worldState)))
-          (make-worldState (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "Q" (arithmetic-shift 1 (- 63 endPositionIndex)))))
-                           (bitboardsToMatrix (updatePieceAtPosition bitboards "Q" (arithmetic-shift 1 (- 63 endPositionIndex))))
-                           (updatePieceAtPosition bitboards "Q" (arithmetic-shift 1 (- 63 endPositionIndex)))
+          (make-worldState (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "Q" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))))
+                           (bitboardsToMatrix (updatePieceAtPosition bitboards "Q" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState))))))
+                           (updatePieceAtPosition bitboards "Q" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))
+                           (make-currentMove empty-image " " BLACK  (make-posn 0 0) (make-posn 0 0))
+                           (make-history (history-castle (worldState-history worldState))
+                                      (history-enPassant (worldState-history worldState))
+                                      #false
+                                      endPositionIndex)
+                           (worldState-quit worldState))]
+         [(equal? endPositionIndex (+ (history-previousEndPosition (worldState-history worldState)) 8))
+          (make-worldState (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "R" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))))
+                           (bitboardsToMatrix (updatePieceAtPosition bitboards "R" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState))))))
+                           (updatePieceAtPosition bitboards "R" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))
+                           (make-currentMove empty-image " " BLACK  (make-posn 0 0) (make-posn 0 0))
+                           (make-history (history-castle (worldState-history worldState))
+                                      (history-enPassant (worldState-history worldState))
+                                      #false
+                                      endPositionIndex)
+                           (worldState-quit worldState))]
+         [(equal? endPositionIndex (+ (history-previousEndPosition (worldState-history worldState)) 16))
+          (make-worldState (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "B" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))))
+                           (bitboardsToMatrix (updatePieceAtPosition bitboards "B" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState))))))
+                           (updatePieceAtPosition bitboards "B" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))
+                           (make-currentMove empty-image " " BLACK  (make-posn 0 0) (make-posn 0 0))
+                           (make-history (history-castle (worldState-history worldState))
+                                      (history-enPassant (worldState-history worldState))
+                                      #false
+                                      endPositionIndex)
+                           (worldState-quit worldState))]
+         [(equal? endPositionIndex (+ (history-previousEndPosition (worldState-history worldState)) 24))
+          (make-worldState (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "N" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))))
+                           (bitboardsToMatrix (updatePieceAtPosition bitboards "N" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState))))))
+                           (updatePieceAtPosition bitboards "N" (arithmetic-shift 1 (- 63 (history-previousEndPosition (worldState-history worldState)))))
                            (make-currentMove empty-image " " BLACK  (make-posn 0 0) (make-posn 0 0))
                            (make-history (history-castle (worldState-history worldState))
                                       (history-enPassant (worldState-history worldState))
@@ -1332,6 +1362,17 @@
                                       #true
                                       endPositionIndex)
                         (worldState-quit worldState))]
+      [(and (equal? "P" piece) (equal? 6 (floor (/ startPositionIndex 8))) (equal? 7 (floor (/ endPositionIndex 8))))
+       (make-worldState (drawPromotionMenu (drawPieces (bitboardsToMatrix (updatePieceAtPosition (updatePieceAtPosition bitboards "P" startPositionBitboard) capturedPiece endPositionBitboard))) BLACK endPositionIndex)
+                        (bitboardsToMatrix (updatePieceAtPosition (updatePieceAtPosition bitboards "P" startPositionBitboard) capturedPiece endPositionBitboard))
+                        (updatePieceAtPosition (updatePieceAtPosition bitboards "P" startPositionBitboard) capturedPiece endPositionBitboard)
+                        (make-currentMove empty-image " " BLACK  (make-posn 0 0) (make-posn 0 0))
+                        (make-history (history-castle (worldState-history worldState))
+                                      (history-enPassant (worldState-history worldState))
+                                      #true
+                                      endPositionIndex)
+                        (worldState-quit worldState))]
+
 
 
 
@@ -1369,7 +1410,6 @@
         (place-image whitePromotionMenu (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo positionIndex 8))) (* SQUARE_SIDE 2) chessboard)
         (place-image blackPromotionMenu (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo positionIndex 8))) (* SQUARE_SIDE 6) chessboard))))
  
-
 
 
 
