@@ -1811,6 +1811,7 @@
 (define (handle-key worldState key-event)
   (cond
     [(string=? "q" key-event) (quit worldState)]
+    [(string=? "r" key-event) (make-initialState)]
     [else worldState]))
 
 
