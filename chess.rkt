@@ -1262,6 +1262,8 @@
        (whitePiecesBitboard bitboards))
      (define blackPieces
        (blackPiecesBitboard bitboards))
+     (define castleRights
+       (history-castleRights (worldState-history worldState)))
      (define castleWhiteKingSide
        (castleRights-castleWhiteKingSide (history-castleRights (worldState-history worldState))))
      (define castleWhiteQueenSide
@@ -1287,11 +1289,31 @@
        
                
       [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces) endPositionBitboard) (- endPositionIndex 63)))
-       (makeRegularMove worldState startPieceColor bitboards startPiece startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleWhiteQueenSide)]
+       (makeRegularMove worldState startPieceColor bitboards startPiece startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex castleRights castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleWhiteQueenSide)]
       [else
        (moveNotValid worldState)])))
 
 ;========================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 (define (makeCastle? matrix bitboards color startPiece endPositionIndex allPieces whitePieces blackPieces castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
@@ -1485,16 +1507,16 @@
             (updatePieceAtPosition bitboards promotedPiece (arithmetic-shift 1 (- 63 previousEndPositionIndex)))
             previousEndPiece
             (arithmetic-shift 1 (- 63 previousEndPositionIndex)))))
-       (define (newWorldState newBitboard)
-         (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
-                          (bitboardsToMatrix newBitboard)
-                          newBitboard
-                          (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
-                          (make-history (history-castleRights (worldState-history worldState))
-                                        (history-enPassant (worldState-history worldState))
-                                        #false
-                                        (history-previousMove (worldState-history worldState)))
-                          (worldState-quit worldState))))
+     (define (newWorldState newBitboard)
+       (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
+                        (bitboardsToMatrix newBitboard)
+                        newBitboard
+                        (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
+                        (make-history (history-castleRights (worldState-history worldState))
+                                      (history-enPassant (worldState-history worldState))
+                                      #false
+                                      (history-previousMove (worldState-history worldState)))
+                        (worldState-quit worldState))))
     (cond
       [(and (equal? WHITE previousStartPieceColor) (equal? endPositionIndex previousEndPositionIndex))
        (newWorldState (newBitboard "Q"))]
@@ -1531,7 +1553,7 @@
         (place-image blackPromotionMenu (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo positionIndex 8))) (* SQUARE_SIDE 6) chessboard))))
 
 
-(define (makeRegularMove worldState startPieceColor bitboards startPiece startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
+(define (makeRegularMove worldState startPieceColor bitboards startPiece startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex castleRights castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
   (local
     ((define newBitboard
        (if (equal? " " endPiece)
@@ -1539,30 +1561,46 @@
            (updatePieceAtPosition
             (updatePieceAtPosition bitboards startPiece (bitwise-ior startPositionBitboard endPositionBitboard))
             endPiece endPositionBitboard)))
-     (define lostCastleWhiteKingSide?
-       (if (or (equal? "K" startPiece) (and (equal? "R" startPiece) (equal? 63 startPositionIndex)))
-           #false
-           castleWhiteKingSide))
-     (define lostCastleWhiteQueenSide?
-       (if (or (equal? "K" startPiece) (and (equal? "R" startPiece) (equal? 56 startPositionIndex)))
-           #false
-           castleWhiteQueenSide))
-     (define lostCastleBlackKingSide?
-       (if (or (equal? "k" startPiece) (and (equal? "r" startPiece) (equal? 7 startPositionIndex)))
-           #false
-           castleBlackKingSide))
-     (define lostCastleBlackQueenSide?
-       (if (or (equal? "k" startPiece) (and (equal? "r" startPiece) (equal? 0 startPositionIndex)))
-           #false
-           castleBlackKingSide)))
+     (define newCastleRights
+       (cond
+         [(equal? "K" startPiece)
+          (make-castleRights #false
+                             #false
+                             castleBlackKingSide
+                             castleBlackQueenSide)]
+         [(and (equal? "R" startPiece) (equal? 63 startPositionIndex))
+          (make-castleRights #false
+                             castleWhiteQueenSide
+                             castleBlackKingSide
+                             castleBlackQueenSide)]
+         [(and (equal? "R" startPiece) (equal? 56 startPositionIndex))
+          (make-castleRights castleWhiteKingSide
+                             #false
+                             castleBlackKingSide
+                             castleBlackQueenSide)]
+
+         [(equal? "k" startPiece)
+          (make-castleRights castleWhiteKingSide
+                             castleWhiteQueenSide
+                             #false
+                             #false)]
+         [(and (equal? "r" startPiece) (equal? 7 startPositionIndex))
+          (make-castleRights castleWhiteKingSide
+                             castleWhiteQueenSide
+                             #false
+                             castleBlackQueenSide)]
+         [(and (equal? "r" startPiece) (equal? 0 startPositionIndex))
+          (make-castleRights castleWhiteKingSide
+                             castleWhiteQueenSide
+                             castleBlackKingSide
+                             #false)]
+         [else
+          castleRights])))
     (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
                      (bitboardsToMatrix newBitboard)
                      newBitboard
                      (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
-                     (make-history (make-castleRights lostCastleWhiteKingSide?
-                                                      lostCastleWhiteQueenSide?
-                                                      lostCastleBlackKingSide?
-                                                      lostCastleBlackQueenSide?)
+                     (make-history newCastleRights
                                    (history-enPassant (worldState-history worldState))
                                    (history-promotion (worldState-history worldState))
                                    (make-previousMove startPieceColor
