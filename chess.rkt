@@ -1159,7 +1159,16 @@
 
 ;;;;;;;;;;;;;;;;;;
 
+;Signature 
+;draw: WorldState-> worldState
+;Interpretation: it draws the current pieces on the chessboard with the newly moved pieces
+;(define (draw worldState) (place-image (currentMove-startPieceIcon)))
 
+;(define (draw worldState)
+;  (place-image (currentMove-startPieceIcon (worldState-currentMove ...))
+;               (posn-x (currentMove-end (worldState-currentMove ...)))
+;               (posn-y (currentMove-end (worldState-currentMove ...)))
+;               (worldState-chessboard ...)))
 
 (define (draw worldState)
   (place-image (currentMove-startPieceIcon (worldState-currentMove worldState))
@@ -1167,11 +1176,51 @@
                (posn-y (currentMove-end (worldState-currentMove worldState)))
                (worldState-chessboard worldState)))
 
+;Signature 
+;hidePieceStartPosition: WorldState NewX NewY -> WorldState 
+;hidePieceStartPosition is a function (hidePieceStartPosition worldState newX newY) where:
+;- worldState: structure
+;- newX:       number   
+;- newY:       number 
+;Interpretation: the function updates the chessboard with the starting position of the piece hidden.
+;(define (hidePieceStartPosition worldState newX newY) worldState)
+
+;(define (hidePieceStartPosition worldState newX newY)
+;  (if (equal? 0 (modulo (+ (floor (/ newY ...)) (floor (/ newX ...))) 2))
+;      (place-image LIGHT_SQUARE (+ (/ ... 2) (* ... (floor (/ newX ...)))) (+ (/ ... 2) (* ... (floor (/ newY ...)))) (worldState-chessboard ...))
+;      (place-image DARK_SQUARE  (+ (/ ... 2) (* ... (floor (/ newX ...)))) (+ (/ ... 2) (* ... (floor (/ newY ...)))) (worldState-chessboard ...))))
+
 (define (hidePieceStartPosition worldState newX newY)
   (if (equal? 0 (modulo (+ (floor (/ newY SQUARE_SIDE)) (floor (/ newX SQUARE_SIDE))) 2))
       (place-image LIGHT_SQUARE (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ newX SQUARE_SIDE)))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ newY SQUARE_SIDE)))) (worldState-chessboard worldState))
       (place-image DARK_SQUARE  (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ newX SQUARE_SIDE)))) (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (floor (/ newY SQUARE_SIDE)))) (worldState-chessboard worldState))))
 
+
+;Signature
+;newMove: worldState newX newY -> worldState
+;newMove is a structure (newMove worldState newX newY) where: 
+;- worldState: structure
+;- newX:       number
+;- newY:       number 
+;Interpretation: returns the worldstate once the button down function from the mouse handler is called and the piece has been placed on the new coordinates 
+;(define (newMove worldState newX newY)(make-worldState (worldState-chessboard)))
+
+;(define (newMove worldState newX newY)
+;  (if (equal? #true (history-promotion (worldState-history worldState)))
+;      (make-worldState (worldState-chessboard ...)
+;                       (worldState-matrix ...)
+;                       (worldState-bitboards ...)
+;                       (make-currentMove ...)
+;                       (worldState-history ...)
+;                       (worldState-quit ...))
+;      (make-worldState (hidePieceStartPosition ...)
+;                       (worldState-matrix ...)
+;                       (worldState-bitboards ...)
+;                       (newCurrentMove ...)
+;                       (worldState-history ...)
+;                       (worldState-quit ...))))
+
+                       
 (define (newMove worldState newX newY)
   (if (equal? #true (history-promotion (worldState-history worldState)))
       (make-worldState (worldState-chessboard worldState)
@@ -1186,6 +1235,48 @@
                        (newCurrentMove worldState newX newY)
                        (worldState-history worldState)
                        (worldState-quit worldState))))
+
+
+;newCurrentMove: WorldState NewX NewY -> WorldState
+;newCurrentMove is a structure (newCurrentMove worldState newX newY) where: 
+;- worldState: worldState
+;- newX:       number
+;- newY:       number
+;interpretation: finds the selected piece and generates a currentMove with the defined parameters
+;(define (newCurrentMove worldState newX newY)(make-currentMove))
+
+;(define (newCurrentMove worldState newX newY)
+;  (local
+;    ((define piece
+;       (matrixGet (worldState-matrix ...) (floor (/ newY ...)) (floor (/ newX ...)))))
+;  (cond
+;    [(equal? ...)
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...) 
+;     (make-currentMove ... )]
+;    [(equal? ...)
+;     (make-currentMove ...)]
+;    [(equal? ...)
+;     (make-currentMove ...)])))
+
 
 (define (newCurrentMove worldState newX newY)
   (local
@@ -1219,6 +1310,27 @@
     [(equal? " " piece)
      (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))])))
 
+
+;changeMove: WorldState NewX NewY -> WorldState
+;changeMove is a structure (changeMove worldState newX newY) where:
+;- worldState: worldState
+;- newX:       number
+;- newY:       number
+; Interpretation: when moving the mouse it draws the selected piece until the user lets go and updates its coordinates 
+;(define (changeMove worldState newX newY) (make-worldState chessboard))
+
+;(define (changeMove worldState newX newY)
+;  (make-worldState (worldState-chessboard ...)
+;                   (worldState-matrix ...)
+;                   (worldState-bitboards ...)
+;                   (make-currentMove (currentMove-startPieceIcon (worldState-currentMove ...))
+;                                     (currentMove-piece (worldState-currentMove ...))
+;                                     (currentMove-start (worldState-currentMove ...))
+;                                     (make-posn ...))
+;                   (worldState-history ...)
+;                   (worldState-quit ...)))
+
+
 (define (changeMove worldState newX newY)
   (make-worldState (worldState-chessboard worldState)
                    (worldState-matrix worldState)
@@ -1229,6 +1341,11 @@
                                      (make-posn newX newY))
                    (worldState-history worldState)
                    (worldState-quit worldState)))
+
+
+;makeMove: WorldState -> WorldState
+;returns the image of the chessboard after with the move executed where it 
+;(define (makeMove worldState) worldState)
 
 (define (makeMove worldState)
   (local
@@ -1346,6 +1463,9 @@
       [(and (equal? "p" startPiece) (equal? endPositionIndex (+ startPositionIndex 7)))
        (newWorldState (newBitboard "left"))])))
 
+;makeCastle: WorldState Bitboards StartPiece EndPositionIndex CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Bitboard
+;generates a new bitboard with the king and rook after they have been castled 
+;(define (makeCastle worldState bitboards startPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) bitboard)
   
 
 
@@ -1467,6 +1587,12 @@
       [(and (equal? "k" startPiece) (equal? 2 endPositionIndex))
        (newWorldState (newBitboard "queenSide"))])))
 
+
+
+;makeCastle? Matrix Bitboards Color StartPiece EndPositionIndex AllPieces WhitePieces BlackPieces CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Boolean
+;determinates if a castle is possible based on the placement of all the pieces on the chessboard  
+;(define (makeCastle? matrix bitboards color startPiece endPositionIndex allPieces whitePieces blackPieces castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) #t)
+
 (define (makeCastle? matrix bitboards color startPiece endPositionIndex allPieces whitePieces blackPieces castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
   (local
     ((define (positionClear? positionIndex)
@@ -1502,8 +1628,9 @@
     (or makeCastleWhiteKingSide? makeCastleWhiteQueenSide? makeCastleBlackKingSide? makeCastleBlackQueenSide?)))
 
 
-
-
+; allAttacks: Matrix Color AllPieces WhitePieces BlackPieces -> Bitboard
+; evaluates all the possible attacks inside the chessboard for both the white and black pieces  
+; (define (allAttacks matrix color allPieces whitePieces blackPieces) bitboard)
 (define (allAttacks matrix color allPieces whitePieces blackPieces)
   (local
     ((define (getPiece positionIndex)
@@ -1525,7 +1652,9 @@
                          (add1 positionIndex))])))
     (allAttacksAcc 0 0)))
 
-       
+; getAttacksPiece: Piece StartPieceColor PositionBitboard PositionIndex AllPieces WhitePieces BlackPieces -> Bitboard
+; acquires the attacks bitboard of the piece based on the relative position in the Bitboard
+; (define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces) Bitboard) 
 (define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
     [(or (equal? "K" piece) (equal? "k" piece))
@@ -1544,31 +1673,10 @@
 
 
 
-
-
-
-
-
 (define (getColor piece)
   (if (or (equal? "K" piece) (equal? "Q" piece) (equal? "R" piece) (equal? "B" piece) (equal? "N" piece) (equal? "P" piece))
             WHITE
             BLACK))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1649,6 +1757,10 @@
         prepareWhitePromotion
         prepareBlackPromotion)))
 
+; makePromotion: WorldState PreviousStartPieceColor Bitboards EndPiece EndPositionIndex PreviousEndPiece PreviousEndPositionIndex -> Piece
+; promotes the pawn to the new selected piece from the promotion menu and place the new piece to where the pawn lied on the chessboard updating its moveset
+;(define (makePromotion worldState previousStartPieceColor bitboards endPiece endPositionIndex previousEndPiece previousEndPositionIndex) (newWorldState (newBitboard "Q")))
+
 (define (makePromotion worldState previousStartPieceColor bitboards endPiece endPositionIndex previousEndPiece previousEndPositionIndex)
   (local
     ((define (newBitboard promotedPiece)
@@ -1692,6 +1804,11 @@
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (worldState-history worldState)
                         (worldState-quit worldState))])))
+
+; drawPromotionMenu: Chessboard StartPieceColor PositionIndex -> Image
+; draws a promotion selection menu ontop of the chessboard and the pawn once a pawn has make it to the corresponding last rank  
+;(define (drawPromotionMenu chessboard startPieceColor positionIndex) place-image whitePromotionMenu)
+
 
 (define (drawPromotionMenu chessboard startPieceColor positionIndex)
   (local
@@ -1763,7 +1880,10 @@
                                                       endPiece
                                                       endPositionIndex))
                      (worldState-quit worldState))))
-  
+
+; getMovesPiece: Piece StartPieceColor PositionBitboard PositionIndex AllPieces WhitePieces BlackPieces -> Bitboard
+; gets the moveset and bitboard of the selected pieces from its position on the chessboard
+; (define (getMovesPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces) (kingMoves startPieceColor whitePieces blackPieces positionBitboard))
 (define (getMovesPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
     [(or (equal? "K" piece) (equal? "k" piece))
@@ -1780,6 +1900,11 @@
              (pawnMoves startPieceColor allPieces whitePieces blackPieces positionBitboard)]
     [else 0]))
 
+
+; moveNotValid: WorldState -> WorldState
+; evaluates wether or not a move is valid once a piece is selected and its moveset is evaluated  
+; (define (moveNotValid worldState) (drawPieces))
+
 (define (moveNotValid worldState)
   (make-worldState (drawPieces (worldState-matrix worldState))
                    (worldState-matrix worldState)
@@ -1788,56 +1913,18 @@
                    (worldState-history worldState)
                    (worldState-quit worldState)))
 
+
+; updatePieceAtPosition: Bitboards Piece PositionBitboard -> Bitboards
+; updates the bitboards piece after is has been moved 
+; (define (updatePieceAtPosition bitboards piece positionBitboard) bitboards)
+
 (define (updatePieceAtPosition bitboards piece positionBitboard)
   (dict-set bitboards piece (bitwise-xor (dict-ref bitboards piece) positionBitboard)))
 
 
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+; quit: WorldState -> WorldState
+; returns an worldState that records the information that the application has quit with the 'quit' parameter set to #true
+; (define (quit worldState) (make-worldState chessboard #f #t))
 
 (define (quit worldState)
   (make-worldState (worldState-chessboard worldState)
@@ -1847,15 +1934,36 @@
                    (worldState-history worldState)
                    #true))
 
+
+
+; quit?: WorldState -> Boolean
+; returns a Boolean indicating whether the app has quit or not.
+; (define (quit? appstate) #f)
+
 (define (quit? worldState)
   (if (equal? #t (worldState-quit worldState))
       #t
       #f))
 
+
+; handle-key: WorldState KeyEvent -> worldState
+; handles the following key event and updates the worldState accordingly
+; - "q": set the world state to quit
+; (define (handle-key worldState key-event) worldState)
+
 (define (handle-key worldState key-event)
   (cond
     [(string=? "q" key-event) (quit worldState)]
+    [(string=? "r" key-event) (make-initialState)]
     [else worldState]))
+
+
+; handle-mouse: worldState Number Number String -> worldState
+; handles the following mouse events and updates the worldState accordingly
+; - "button-down": selects the piece 
+; - "drag": move the current piece end point
+; - "button-up": add the current piece to the chessboard
+; (define (handle-mouse worldState x-mouse y-mouse mouse-event) worldState)
 
 (define (handle-mouse worldState x-mouse y-mouse mouse-event)
   (cond
@@ -1865,19 +1973,9 @@
     [(string=? "button-up" mouse-event) (makeMove worldState)]
     [else worldState]))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+;================================================================================================================================================================
+;MAIN FUNCTION
+;================================================================================================================================================================
 
 (define initialState (make-worldState
                         (drawPieces STANDARD_MATRIX)
