@@ -1954,7 +1954,7 @@
 (define (handle-key worldState key-event)
   (cond
     [(string=? "q" key-event) (quit worldState)]
-    [(string=? "r" key-event) (make-initialState)]
+    [(string=? "r" key-event) initialState]
     [else worldState]))
 
 
