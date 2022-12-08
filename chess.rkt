@@ -1084,6 +1084,12 @@
           (define canBlackProtect (canBlackPiecesProtect WK WQ WR WB WN WP BK BQ BR BB BN BP allPieces whitePieces blackPieces positionBitboard))]
   (if (or canKingMove canBlackProtect) #f
     #t)))
+
+
+;; STALEMATE
+; If the king is safe but no move is legal then it is stalemate
+
+
 ;;;;;;;;;;;;;;;;;;
 
 
