@@ -536,6 +536,9 @@
 ; PIECES MOVES
 ; ============
 
+(define (putPieceBitboard positionIndex)
+  (display (~r (arithmetic-shift 1 (- 63 positionIndex)) #:base 2 #:min-width 64 #:pad-string "0")))
+
 ; for King and Knight
 (define FILE_A #b1000000010000000100000001000000010000000100000001000000010000000)
 (define FILE_AB #b1100000011000000110000001100000011000000110000001100000011000000)
