@@ -1527,6 +1527,12 @@
 
 
 
+;(define (getColor piece)
+;  (if (or (equal? ...) (equal? ...) (equal? ...) (equal? ...) (equal? ...) (equal? ...))
+;            WHITE
+;            BLACK))
+
+
 (define (getColor piece)
   (if (or (equal? "K" piece) (equal? "Q" piece) (equal? "R" piece) (equal? "B" piece) (equal? "N" piece) (equal? "P" piece))
             WHITE
@@ -1581,6 +1587,38 @@
             (equal? 7 (floor (/ endPositionIndex 8))))))
     (or prepareWhitePromotion? prepareBlackPromotion?)))
 
+
+;(define (preparePromotion worldState startPieceColor bitboards startPositionBitboard endPiece endPositionIndex)
+;  (local
+;    ((define prepareWhitePromotion
+;       (make-worldState (drawPromotionMenu (drawPieces (bitboardsToMatrix (updatePieceAtPosition ... startPositionBitboard))) WHITE endPositionIndex)
+;                        (bitboardsToMatrix (updatePieceAtPosition ... startPositionBitboard))
+;                        (updatePieceAtPosition ... startPositionBitboard)
+;                        (make-currentMove ...)
+;                        (make-history (history-castleRights (worldState-history ...))
+;                                      #false
+;                                      #true
+;                                      (make-previousMove ...
+;                                                         ...
+;                                                         ...))
+;                        (worldState-quit ...)))
+;     (define prepareBlackPromotion
+;       (make-worldState (drawPromotionMenu (drawPieces (bitboardsToMatrix (updatePieceAtPosition ... startPositionBitboard))) BLACK endPositionIndex)
+;                        (bitboardsToMatrix (updatePieceAtPosition ... startPositionBitboard))
+;                        (updatePieceAtPosition ... startPositionBitboard)
+;                        (make-currentMove ...)
+;                        (make-history (history-castleRights (worldState-history ...))
+;                                   #false
+;                                   #true
+;                                   (make-previousMove ...
+;                                                      ...
+;                                                      ...))
+;                        (worldState-quit ...))))
+;    (if (equal? #true startPieceColor)
+;        prepareWhitePromotion
+;        prepareBlackPromotion)))
+
+
 (define (preparePromotion worldState startPieceColor bitboards startPositionBitboard endPiece endPositionIndex)
   (local
     ((define prepareWhitePromotion
@@ -1614,6 +1652,50 @@
 ; makePromotion: WorldState PreviousStartPieceColor Bitboards EndPiece EndPositionIndex PreviousEndPiece PreviousEndPositionIndex -> Piece
 ; promotes the pawn to the new selected piece from the promotion menu and place the new piece to where the pawn lied on the chessboard updating its moveset
 ;(define (makePromotion worldState previousStartPieceColor bitboards endPiece endPositionIndex previousEndPiece previousEndPositionIndex) (newWorldState (newBitboard "Q")))
+
+;(define (makePromotion worldState previousStartPieceColor bitboards endPiece endPositionIndex previousEndPiece previousEndPositionIndex)
+;  (local
+;    ((define (newBitboard ...)
+;       (if (equal? ...)
+;           (updatePieceAtPosition ...(arithmetic-shift 1 (- 63 ...)))
+;           (updatePieceAtPosition
+;            (updatePieceAtPosition ... (arithmetic-shift 1 (- 63 ...)))
+;            previousEndPiece
+;            (arithmetic-shift 1 (- 63 ...)))))
+;     (define (newWorldState newBitboard)
+;       (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
+;                        (bitboardsToMatrix newBitboard)
+;                        newBitboard
+;                        (make-currentMove ...)
+;                        (make-history (history-castleRights (worldState-history ...))
+;                                      #false
+;                                      #false
+;                                      (history-previousMove (worldState-history ...)))
+;                        (worldState-quit ...))))
+;    (cond
+;      [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;       [(and (equal? ...) (equal? ...))
+;       (newWorldState (newBitboard ...))]
+;      [else
+;       (make-worldState (drawPromotionMenu (drawPieces (worldState-matrix ...)) WHITE previousEndPositionIndex)
+;                        (worldState-matrix ...)
+;                        (worldState-bitboards ...)
+;                        (make-currentMove ...)
+;                        (worldState-history ...)
+;                        (worldState-quit ...))])))
 
 (define (makePromotion worldState previousStartPieceColor bitboards endPiece endPositionIndex previousEndPiece previousEndPositionIndex)
   (local
@@ -1683,6 +1765,65 @@
         (place-image whitePromotionMenu (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo positionIndex 8))) (* SQUARE_SIDE 2) chessboard)
         (place-image blackPromotionMenu (+ (/ SQUARE_SIDE 2) (* SQUARE_SIDE (modulo positionIndex 8))) (* SQUARE_SIDE 6) chessboard))))
 
+;
+;
+;(define (makeRegularMove worldState startPieceColor bitboards startPiece startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex castleRights castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
+;  (local
+;    ((define newBitboard
+;       (if (equal? " " endPiece)
+;           (updatePieceAtPosition ... (bitwise-ior ...))
+;           (updatePieceAtPosition
+;            (updatePieceAtPosition ...)))
+;     (define newCastleRights
+;       (cond
+;         [(and (equal? ...) ())
+;          (make-castleRights ...
+;                             ...
+;                             ...
+;                             #false)]
+;         [(and (equal? ...) (equal? ...))
+;          (make-castleRights ...
+;                             ...
+;                             ...
+;                             #false)]
+;         [(and (equal? ...) (equal? ...))
+;          (make-castleRights ...
+;                             ...
+;                             ...
+;                             #false)]
+;
+;         [(and (equal? ...) (equal? ...))
+;          (make-castleRights ...
+;                             ...
+;                             ...
+;                             #false)]
+;         [(and (equal? ...) (equal? ...))
+;          (make-castleRights ...
+;                             ...
+;                             ...
+;                             #false)]
+;         [(and (equal? ...) (equal? ...))
+;          (make-castleRights ...
+;                             ...
+;                             ...
+;                             #false)]
+;         [else
+;          castleRights]))
+;     (define newEnPassant
+;       (if (or (and (equal? ...) (equal? ...)) (equal? ...))
+;               (and (equal? ...) (equal? ...)) (equal? ...)))
+;           #true
+;           #false)))
+;    (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
+;                     (bitboardsToMatrix ...)
+;                     ...
+;                     (make-currentMove ...)
+;                     (make-history newCastleRights
+;                                   newEnPassant
+;                                   (history-promotion (worldState-history ...))
+;                                   (make-previousMove ...))
+;                     (worldState-quit ...))))
+
 
 (define (makeRegularMove worldState startPieceColor bitboards startPiece startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex castleRights castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
   (local
@@ -1747,6 +1888,23 @@
 ; getMovesPiece: Piece StartPieceColor PositionBitboard PositionIndex AllPieces WhitePieces BlackPieces -> Bitboard
 ; gets the moveset and bitboard of the selected pieces from its position on the chessboard
 ; (define (getMovesPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces) (kingMoves startPieceColor whitePieces blackPieces positionBitboard))
+
+;(define (getMovesPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
+;  (cond
+;    [(or (equal? ...) (equal? ...))
+;             ...]
+;    [(or (equal? ...) (equal? ...))
+;             ...]
+;    [(or (equal? ...) (equal? ...))
+;             ...]
+;    [(or (equal? ...) (equal? ...))
+;             ...]
+;    [(or (equal? ...) (equal? ...))
+;             ...]
+;    [(or (equal? ...) (equal? ...))
+;             ...]
+;    [else ...]))
+
 (define (getMovesPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
     [(or (equal? "K" piece) (equal? "k" piece))
@@ -1768,6 +1926,14 @@
 ; evaluates wether or not a move is valid once a piece is selected and its moveset is evaluated  
 ; (define (moveNotValid worldState) (drawPieces))
 
+;(define (moveNotValid worldState)
+;  (make-worldState (drawPieces ...)
+;                   (worldState-matrix ...)
+;                   (worldState-bitboards ...)
+;                   (make-currentMove ...)
+;                   (worldState-history ...)
+;                   (worldState-quit ...)))
+
 (define (moveNotValid worldState)
   (make-worldState (drawPieces (worldState-matrix worldState))
                    (worldState-matrix worldState)
@@ -1781,6 +1947,9 @@
 ; updates the bitboards piece after is has been moved 
 ; (define (updatePieceAtPosition bitboards piece positionBitboard) bitboards)
 
+;(define (updatePieceAtPosition bitboards piece positionBitboard)
+;  (dict-set ... (bitwise-xor (dict-ref ...) ...)))
+
 (define (updatePieceAtPosition bitboards piece positionBitboard)
   (dict-set bitboards piece (bitwise-xor (dict-ref bitboards piece) positionBitboard)))
 
@@ -1788,6 +1957,14 @@
 ; quit: WorldState -> WorldState
 ; returns an worldState that records the information that the application has quit with the 'quit' parameter set to #true
 ; (define (quit worldState) (make-worldState chessboard #f #t))
+
+;(define (quit worldState)
+;  (make-worldState (worldState-chessboard ...)
+;                   (worldState-matrix ...)
+;                   (worldState-bitboards ...)
+;                   (worldState-currentMove ...)
+;                   (worldState-history ...)
+;                   #true))
 
 (define (quit worldState)
   (make-worldState (worldState-chessboard worldState)
