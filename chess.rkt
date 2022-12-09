@@ -85,14 +85,15 @@
 ; - previousEndPosition: Posn
 (define-struct history [castleRights enPassant promotion previousMove])
 
-; WorldState is a Structure (make-worldState chessboard matrix bitboards currentMove history quit)
+; WorldState is a Structure (make-worldState chessboard matrix bitboards turn currentMove history quit)
 ; - chessboard:  Image
 ; - matrix:      Matrix
 ; - bitboards:   Dictionary<Bitboard>
+; - turn:        Color
 ; - currentMove: CurrentMove
 ; - history:     History
 ; - quit:        Boolean
-(define-struct worldState [chessboard matrix bitboards currentMove history quit])
+(define-struct worldState [chessboard matrix bitboards turn currentMove history quit])
 
 
 ; ========
@@ -1024,19 +1025,34 @@
 
                        
 (define (newMove worldState newX newY)
-  (if (equal? #true (history-promotion (worldState-history worldState)))
-      (make-worldState (worldState-chessboard worldState)
-                       (worldState-matrix worldState)
-                       (worldState-bitboards worldState)
-                       (make-currentMove empty-image " " (make-posn newX newY) (make-posn newX newY))
-                       (worldState-history worldState)
-                       (worldState-quit worldState))
-      (make-worldState (hidePieceStartPosition worldState newX newY)
-                       (worldState-matrix worldState)
-                       (worldState-bitboards worldState)
-                       (newCurrentMove worldState newX newY)
-                       (worldState-history worldState)
-                       (worldState-quit worldState))))
+  (local
+    ((define piece
+       (matrixGet (worldState-matrix worldState) (floor (/ newY SQUARE_SIDE)) (floor (/ newX SQUARE_SIDE)))))
+    (cond
+      [(equal? #true (history-promotion (worldState-history worldState)))
+       (make-worldState (worldState-chessboard worldState)
+                        (worldState-matrix worldState)
+                        (worldState-bitboards worldState)
+                        (worldState-turn worldState)
+                        (make-currentMove empty-image " " (make-posn newX newY) (make-posn newX newY))
+                        (worldState-history worldState)
+                        (worldState-quit worldState))]
+      [(and (equal? (worldState-turn worldState) (getColor piece)))
+       (make-worldState (hidePieceStartPosition worldState newX newY)
+                        (worldState-matrix worldState)
+                        (worldState-bitboards worldState)
+                        (worldState-turn worldState)
+                        (newCurrentMove piece newX newY)
+                        (worldState-history worldState)
+                        (worldState-quit worldState))]
+       [else
+        (make-worldState (worldState-chessboard worldState)
+                        (worldState-matrix worldState)
+                        (worldState-bitboards worldState)
+                        (worldState-turn worldState)
+                        (make-currentMove empty-image " " (make-posn newX newY) (make-posn newX newY))
+                        (worldState-history worldState)
+                        (worldState-quit worldState))])))
 
 
 ;newCurrentMove: WorldState NewX NewY -> WorldState
@@ -1080,10 +1096,7 @@
 ;     (make-currentMove ...)])))
 
 
-(define (newCurrentMove worldState newX newY)
-  (local
-    ((define piece
-       (matrixGet (worldState-matrix worldState) (floor (/ newY SQUARE_SIDE)) (floor (/ newX SQUARE_SIDE)))))
+(define (newCurrentMove piece newX newY)
   (cond
     [(equal? "K" piece)
      (make-currentMove WK_ICON "K" (make-posn newX newY) (make-posn newX newY))]
@@ -1110,7 +1123,7 @@
     [(equal? "p" piece)
      (make-currentMove BP_ICON "p" (make-posn newX newY) (make-posn newX newY))]
     [(equal? " " piece)
-     (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))])))
+     (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))]))
 
 
 ;changeMove: WorldState NewX NewY -> WorldState
@@ -1137,6 +1150,7 @@
   (make-worldState (worldState-chessboard worldState)
                    (worldState-matrix worldState)
                    (worldState-bitboards worldState)
+                   (worldState-turn worldState)
                    (make-currentMove (currentMove-startPieceIcon (worldState-currentMove worldState))
                                      (currentMove-piece (worldState-currentMove worldState))
                                      (currentMove-start (worldState-currentMove worldState))
@@ -1207,6 +1221,15 @@
 
       [(makeEnPassant? startPiece startPositionIndex endPositionIndex previousStartPieceColor previousEndPositionIndex enPassant)
        (makeEnPassant worldState bitboards startPiece startPieceColor startPositionIndex endPiece endPositionIndex previousEndPositionIndex)]
+      
+      ; enPassantWhiteRight
+      ;[(and (equal? "P" startPiece)
+       ;     (equal? BLACK previousStartPieceColor)
+        ;    (equal? (- previousEndPositionIndex 1) startPositionIndex)
+         ;   (equal? (- previousEndPositionIndex 8) endPositionIndex)
+          ;  (equal? 3 (floor (/ startPositionIndex 8)))
+           ; (not (equal? 7 (modulo startPositionIndex 8)))
+            ;enPassant)
 
 
 
@@ -1218,6 +1241,9 @@
        (moveNotValid worldState)])))
 
 ;========================================================================================================================================================
+
+
+
 
 (define (makeEnPassant worldState bitboards startPiece startPieceColor startPositionIndex endPiece endPositionIndex previousEndPositionIndex)
   (local
@@ -1247,6 +1273,7 @@
        (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
                         (bitboardsToMatrix newBitboard)
                         newBitboard
+                        (not (worldState-turn worldState))
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (make-history (history-castleRights (worldState-history worldState))
                                       #false
@@ -1268,34 +1295,6 @@
 ;makeCastle: WorldState Bitboards StartPiece EndPositionIndex CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Bitboard
 ;generates a new bitboard with the king and rook after they have been castled 
 ;(define (makeCastle worldState bitboards startPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) bitboard)
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 (define (makeEnPassant? startPiece startPositionIndex endPositionIndex previousStartPieceColor previousEndPositionIndex enPassant)
   (local
     ((define enPassantWhiteRight
@@ -1332,6 +1331,10 @@
             enPassant)))
     (or enPassantWhiteRight enPassantWhiteLeft enPassantBlackRight enPassantBlackLeft)))
 
+
+;makeCastle: WorldState Bitboards StartPiece EndPositionIndex CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Bitboard
+;generates a new bitboard with the king and rook after they have been castled 
+;(define (makeCastle worldState bitboards startPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) bitboard)
 
 (define (makeCastle worldState bitboards startPiece startPieceColor endPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
   (local
@@ -1371,6 +1374,7 @@
        (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
                         (bitboardsToMatrix newBitboard)
                         newBitboard
+                        (not (worldState-turn worldState))
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (make-history newCastleRights
                                       #false
@@ -1433,6 +1437,20 @@
 ; allAttacks: Matrix Color AllPieces WhitePieces BlackPieces -> Bitboard
 ; evaluates all the possible attacks inside the chessboard for both the white and black pieces  
 ; (define (allAttacks matrix color allPieces whitePieces blackPieces) bitboard)
+
+;(define (allAttacks matrix color allPieces whitePieces blackPieces)
+;  (local
+;    ((define (getPiece ...)
+;       (matrixGet (...)))
+;     (define (allAttacksAcc bitboard positionIndex)
+;       (cond
+;         [(equal? ...)]
+;         [(or (equal? ...))
+;          (allAttacksAcc ...)]
+;         [else
+;          (allAttacksAcc (bitwise-ior ...))])))
+;    (allAttacksAcc ...)))
+
 (define (allAttacks matrix color allPieces whitePieces blackPieces)
   (local
     ((define (getPiece positionIndex)
@@ -1457,6 +1475,23 @@
 ; getAttacksPiece: Piece StartPieceColor PositionBitboard PositionIndex AllPieces WhitePieces BlackPieces -> Bitboard
 ; acquires the attacks bitboard of the piece based on the relative position in the Bitboard
 ; (define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces) Bitboard) 
+
+;(define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
+;  (cond
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [else ...]))
+
 (define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
     [(or (equal? "K" piece) (equal? "k" piece))
@@ -1535,6 +1570,7 @@
        (make-worldState (drawPromotionMenu (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "P" startPositionBitboard))) WHITE endPositionIndex)
                         (bitboardsToMatrix (updatePieceAtPosition bitboards "P" startPositionBitboard))
                         (updatePieceAtPosition bitboards "P" startPositionBitboard)
+                        (worldState-turn worldState)
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (make-history (history-castleRights (worldState-history worldState))
                                       #false
@@ -1547,6 +1583,7 @@
        (make-worldState (drawPromotionMenu (drawPieces (bitboardsToMatrix (updatePieceAtPosition bitboards "p" startPositionBitboard))) BLACK endPositionIndex)
                         (bitboardsToMatrix (updatePieceAtPosition bitboards "p" startPositionBitboard))
                         (updatePieceAtPosition bitboards "p" startPositionBitboard)
+                        (worldState-turn worldState)
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (make-history (history-castleRights (worldState-history worldState))
                                    #false
@@ -1576,6 +1613,7 @@
        (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
                         (bitboardsToMatrix newBitboard)
                         newBitboard
+                        (not (worldState-turn worldState))
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (make-history (history-castleRights (worldState-history worldState))
                                       #false
@@ -1600,9 +1638,10 @@
       [(and (equal? BLACK previousStartPieceColor) (equal? endPositionIndex (- previousEndPositionIndex 24)))
        (newWorldState (newBitboard "n"))]
       [else
-       (make-worldState (drawPromotionMenu (drawPieces (worldState-matrix worldState)) WHITE previousEndPositionIndex)
+       (make-worldState (drawPromotionMenu (drawPieces (worldState-matrix worldState)) previousStartPieceColor previousEndPositionIndex)
                         (worldState-matrix worldState)
                         (worldState-bitboards worldState)
+                        (worldState-turn worldState)
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (worldState-history worldState)
                         (worldState-quit worldState))])))
@@ -1611,6 +1650,15 @@
 ; draws a promotion selection menu ontop of the chessboard and the pawn once a pawn has make it to the corresponding last rank  
 ;(define (drawPromotionMenu chessboard startPieceColor positionIndex) place-image whitePromotionMenu)
 
+;(define (drawPromotionMenu chessboard startPieceColor positionIndex)
+;  (local
+;    ((define whitePromotionMenu
+;       (above (overlay WQ_ICON WHITE_SQUARE) (...)))
+;     (define blackPromotionMenu
+;       (above (overlay BN_ICON WHITE_SQUARE) (...))))
+;    (if (equal? #true startPieceColor)
+;        (place-image whitePromotionMenu (...) chessboard)
+;        (place-image blackPromotionMenu (...) chessboard))))
 
 (define (drawPromotionMenu chessboard startPieceColor positionIndex)
   (local
@@ -1674,6 +1722,7 @@
     (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
                      (bitboardsToMatrix newBitboard)
                      newBitboard
+                     (not (worldState-turn worldState))
                      (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                      (make-history newCastleRights
                                    newEnPassant
@@ -1711,6 +1760,7 @@
   (make-worldState (drawPieces (worldState-matrix worldState))
                    (worldState-matrix worldState)
                    (worldState-bitboards worldState)
+                   (worldState-turn worldState)
                    (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                    (worldState-history worldState)
                    (worldState-quit worldState)))
@@ -1732,6 +1782,7 @@
   (make-worldState (worldState-chessboard worldState)
                    (worldState-matrix worldState)
                    (worldState-bitboards worldState)
+                   (worldState-turn worldState)
                    (worldState-currentMove worldState)
                    (worldState-history worldState)
                    #true))
@@ -1741,6 +1792,10 @@
 ; quit?: WorldState -> Boolean
 ; returns a Boolean indicating whether the app has quit or not.
 ; (define (quit? appstate) #f)
+
+;(define (quit? worldState)
+;  (if (equal? #t (... worldState ...))
+;      ...))
 
 (define (quit? worldState)
   (if (equal? #t (worldState-quit worldState))
@@ -1752,6 +1807,12 @@
 ; handles the following key event and updates the worldState accordingly
 ; - "q": set the world state to quit
 ; (define (handle-key worldState key-event) worldState)
+
+;(define handle-key worldState key-event) 
+;  (cond
+;    [(string=? "q" key-event) (... worldState ...)]
+;    [(string=? "r" key-event) (... worldState ...)]
+;    [else worldState]))
 
 (define (handle-key worldState key-event)
   (cond
@@ -1766,6 +1827,14 @@
 ; - "drag": move the current piece end point
 ; - "button-up": add the current piece to the chessboard
 ; (define (handle-mouse worldState x-mouse y-mouse mouse-event) worldState)
+
+;(define (handle-mouse worldState x-mouse y-mouse mouse-event)
+;  (cond
+;    [(string=? "button-down" mouse-event) (... worldState ...)]
+;    [(and (string=? "drag" mouse-event)
+;          (line2D? (... worldState ...))) (... worldState ...)]
+;    [(string=? "button-up" mouse-event) (... worldState ...)]
+;    [else worldState]))
 
 (define (handle-mouse worldState x-mouse y-mouse mouse-event)
   (cond
@@ -1783,6 +1852,7 @@
                         (drawPieces STANDARD_MATRIX)
                         STANDARD_MATRIX
                         (matrixToBitboards STANDARD_MATRIX)
+                        #true
                         (make-currentMove empty-image " " (make-posn 0 0) (make-posn 0 0))
                         (make-history (make-castleRights #true
                                                          #true
@@ -1804,3 +1874,9 @@
     [close-on-stop #true]))
 
 (drawing-app initialState)
+
+; things to do
+; remove captured piece already in prepare promotion
+; clean up the parameters in a consinstent order
+; positionIndex before positionBitboard
+; Refactor makeMove
