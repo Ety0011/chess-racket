@@ -1417,6 +1417,9 @@
 
 ;========================================================================================================================================================
 
+
+
+
 (define (makeEnPassant worldState bitboards startPiece startPieceColor startPositionIndex endPiece endPositionIndex previousEndPositionIndex)
   (local
     ((define (newBitboard capture)
@@ -1463,35 +1466,6 @@
       [(and (equal? "p" startPiece) (equal? endPositionIndex (+ startPositionIndex 7)))
        (newWorldState (newBitboard "left"))])))
 
-;makeCastle: WorldState Bitboards StartPiece EndPositionIndex CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Bitboard
-;generates a new bitboard with the king and rook after they have been castled 
-;(define (makeCastle worldState bitboards startPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) bitboard)
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 (define (makeEnPassant? startPiece startPositionIndex endPositionIndex previousStartPieceColor previousEndPositionIndex enPassant)
@@ -1530,6 +1504,10 @@
             enPassant)))
     (or enPassantWhiteRight enPassantWhiteLeft enPassantBlackRight enPassantBlackLeft)))
 
+
+;makeCastle: WorldState Bitboards StartPiece EndPositionIndex CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Bitboard
+;generates a new bitboard with the king and rook after they have been castled 
+;(define (makeCastle worldState bitboards startPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) bitboard)
 
 (define (makeCastle worldState bitboards startPiece startPieceColor endPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
   (local
@@ -1631,6 +1609,20 @@
 ; allAttacks: Matrix Color AllPieces WhitePieces BlackPieces -> Bitboard
 ; evaluates all the possible attacks inside the chessboard for both the white and black pieces  
 ; (define (allAttacks matrix color allPieces whitePieces blackPieces) bitboard)
+
+;(define (allAttacks matrix color allPieces whitePieces blackPieces)
+;  (local
+;    ((define (getPiece ...)
+;       (matrixGet (...)))
+;     (define (allAttacksAcc bitboard positionIndex)
+;       (cond
+;         [(equal? ...)]
+;         [(or (equal? ...))
+;          (allAttacksAcc ...)]
+;         [else
+;          (allAttacksAcc (bitwise-ior ...))])))
+;    (allAttacksAcc ...)))
+
 (define (allAttacks matrix color allPieces whitePieces blackPieces)
   (local
     ((define (getPiece positionIndex)
@@ -1655,6 +1647,23 @@
 ; getAttacksPiece: Piece StartPieceColor PositionBitboard PositionIndex AllPieces WhitePieces BlackPieces -> Bitboard
 ; acquires the attacks bitboard of the piece based on the relative position in the Bitboard
 ; (define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces) Bitboard) 
+
+;(define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
+;  (cond
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [(or (equal? ...) (...))
+;             (...)]
+;    [else ...]))
+
 (define (getAttacksPiece piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
   (cond
     [(or (equal? "K" piece) (equal? "k" piece))
@@ -1809,6 +1818,15 @@
 ; draws a promotion selection menu ontop of the chessboard and the pawn once a pawn has make it to the corresponding last rank  
 ;(define (drawPromotionMenu chessboard startPieceColor positionIndex) place-image whitePromotionMenu)
 
+;(define (drawPromotionMenu chessboard startPieceColor positionIndex)
+;  (local
+;    ((define whitePromotionMenu
+;       (above (overlay WQ_ICON WHITE_SQUARE) (...)))
+;     (define blackPromotionMenu
+;       (above (overlay BN_ICON WHITE_SQUARE) (...))))
+;    (if (equal? #true startPieceColor)
+;        (place-image whitePromotionMenu (...) chessboard)
+;        (place-image blackPromotionMenu (...) chessboard))))
 
 (define (drawPromotionMenu chessboard startPieceColor positionIndex)
   (local
@@ -1940,6 +1958,10 @@
 ; returns a Boolean indicating whether the app has quit or not.
 ; (define (quit? appstate) #f)
 
+;(define (quit? worldState)
+;  (if (equal? #t (... worldState ...))
+;      ...))
+
 (define (quit? worldState)
   (if (equal? #t (worldState-quit worldState))
       #t
@@ -1950,6 +1972,12 @@
 ; handles the following key event and updates the worldState accordingly
 ; - "q": set the world state to quit
 ; (define (handle-key worldState key-event) worldState)
+
+;(define handle-key worldState key-event) 
+;  (cond
+;    [(string=? "q" key-event) (... worldState ...)]
+;    [(string=? "r" key-event) (... worldState ...)]
+;    [else worldState]))
 
 (define (handle-key worldState key-event)
   (cond
@@ -1964,6 +1992,14 @@
 ; - "drag": move the current piece end point
 ; - "button-up": add the current piece to the chessboard
 ; (define (handle-mouse worldState x-mouse y-mouse mouse-event) worldState)
+
+;(define (handle-mouse worldState x-mouse y-mouse mouse-event)
+;  (cond
+;    [(string=? "button-down" mouse-event) (... worldState ...)]
+;    [(and (string=? "drag" mouse-event)
+;          (line2D? (... worldState ...))) (... worldState ...)]
+;    [(string=? "button-up" mouse-event) (... worldState ...)]
+;    [else worldState]))
 
 (define (handle-mouse worldState x-mouse y-mouse mouse-event)
   (cond
