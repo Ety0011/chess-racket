@@ -1337,7 +1337,7 @@
 ;(define (makeCastle worldState bitboards startPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) bitboard)
 
 (define (makeCastle worldState bitboards startPiece startPieceColor endPiece endPositionIndex castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
-  (local
+  (localallPieces (- positionIndex 63)
     ((define (newBitboard side)
        (cond
          [(and (equal? "K" startPiece) (equal? "kingSide" side))
@@ -1398,6 +1398,41 @@
 ;makeCastle? Matrix Bitboards Color StartPiece EndPositionIndex AllPieces WhitePieces BlackPieces CastleWhiteKingSide CastleWhiteQueenSide CastleBlackKingSide CastleBlackQueenSide -> Boolean
 ;determinates if a castle is possible based on the placement of all the pieces on the chessboard  
 ;(define (makeCastle? matrix bitboards color startPiece endPositionIndex allPieces whitePieces blackPieces castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide) #t)
+
+
+;(define (makeCastle? matrix bitboards color startPiece endPositionIndex allPieces whitePieces blackPieces castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
+;  (local
+;    ((define (positionClear? positionIndex)
+;       (equal? 0 (bitwise-and 1 (arithmetic-shift ...))))
+;     (define (positionSafe? positionIndex)
+;       (equal? 0 (bitwise-and 1 (arithmetic-shift ...)))))
+;     (define makeCastleWhiteKingSide?
+;       (and (equal? ... startPiece)
+;            (equal? ... endPositionIndex)
+;            (positionClear? ...) (positionSafe? ...)
+;            (positionClear? ...) (positionSafe? ...)
+;            castleWhiteKingSide))
+;     (define makeCastleWhiteQueenSide?
+;       (and (equal? ... startPiece)
+;            (equal? ... endPositionIndex)
+;            (positionClear? ...) (positionSafe? ...)
+;            (positionClear? ...) (positionSafe? ...)
+;            (positionClear? ...)
+;            castleWhiteQueenSide))
+;     (define makeCastleBlackKingSide?
+;       (and (equal? ... startPiece)
+;            (equal? ... endPositionIndex)
+;            (positionClear? ...) (positionSafe? ...)
+;            (positionClear? ...) (positionSafe? ...)
+;            castleBlackKingSide))
+;     (define makeCastleBlackQueenSide?
+;       (and (equal? ... startPiece)
+;            (equal? ... endPositionIndex)
+;            (positionClear? ...) (positionSafe? ...)
+;            (positionClear? ...) (positionSafe? ...)
+;            (positionClear? ...)
+;            castleWhiteQueenSide)))
+;    (or makeCastleWhiteKingSide? makeCastleWhiteQueenSide? makeCastleBlackKingSide? makeCastleBlackQueenSide?)))
 
 (define (makeCastle? matrix bitboards color startPiece endPositionIndex allPieces whitePieces blackPieces castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleBlackQueenSide)
   (local
@@ -1523,6 +1558,24 @@
 
 
 
+
+;(define (allPiecesBitboard bitboards)
+;  (bitwise-xor
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)))
+
+
+
 (define (allPiecesBitboard bitboards)
   (bitwise-xor
    (dict-ref bitboards "K")
@@ -1538,6 +1591,16 @@
    (dict-ref bitboards "n")
    (dict-ref bitboards "p")))
 
+
+;(define (whitePiecesBitboard bitboards)
+;  (bitwise-xor
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)))
+
 (define (whitePiecesBitboard bitboards)
   (bitwise-xor
    (dict-ref bitboards "K")
@@ -1546,6 +1609,16 @@
    (dict-ref bitboards "B")
    (dict-ref bitboards "N")
    (dict-ref bitboards "P")))
+
+
+;(define (blackPiecesBitboard bitboards)
+;  (bitwise-xor
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)
+;   (dict-ref ...)))
 
 (define (blackPiecesBitboard bitboards)
   (bitwise-xor
