@@ -167,13 +167,13 @@
 (define TEST_MATRIX
   (vector
    (vector "r" "n" " " " " " " "r" "k" " ")
-   (vector "p" "b" "p" "p" " " " " "p" "p")
+   (vector "p" "b" "p" "p" "q" " " "p" "p")
    (vector " " "p" " " " " " " " " " " " ")
    (vector " " " " " " " " " " " " " " "Q")
    (vector " " " " " " "P" " " " " " " " ")
-   (vector " " " " " " "B" " " " " " " " ")
-   (vector "P" "P" "P" "p" " " "P" "P" "P")
-   (vector "R" " " " " " " "K" " " " " "R")))
+   (vector " " "P" " " "B" " " " " " " " ")
+   (vector "P" " " "P" " " "K" "P" "P" "P")
+   (vector "R" " " " " " " " " " " " " "R")))
 
 (define TEST_MATRIX2
   (vector
@@ -182,8 +182,8 @@
    (vector " " "p" " " " " " " "b" " " " ")
    (vector " " " " " " " " "N" " " " " "Q")
    (vector " " " " " " "P" " " " " " " " ")
-   (vector " " " " " " "B" " " " " " " " ")
-   (vector "P" "P" "P" " " " " "P" "P" "P")
+   (vector " " "P" " " "B" " " " " " " " ")
+   (vector "P" " " "P" " " " " "P" "P" "P")
    (vector "R" " " " " " " "K" " " " " "R")))
 
 
@@ -250,6 +250,8 @@
 ; matrixToBitboards: Matrix -> Dictionary<Bitboard>
 ; Interpretation: assignes every piece in the matrix to the corresponding "1" in the bitboards. Both boards are accessed with matrixIndex which is a number that ranges from 0 to 63
 ; Header: (define (matrixToBitboards matrix) BITBOARDS_OF_STANDARD_MATRIX)
+
+
 
 ; Examples
 (define BITBOARDS_OF_STANDARD_MATRIX
@@ -908,25 +910,20 @@
 ;(check-expect (pawnMoves WHITE TEST_ALLPIECES TEST_WHITEPIECES TEST_BLACKPIECES WPPOSITION) WP_EXPECTED_MOVES)
 ;(check-expect (pawnMoves BLACK TEST_ALLPIECES TEST_WHITEPIECES TEST_BLACKPIECES BPPOSITION) BP_EXPECTED_MOVES)
 
-(define (pawnMoves color allPieces whitePieces blackPieces positionBitboard)
-  (local
-    ((define possibleWhiteMoves
-       (bitwise-ior
-        (bitwise-and (arithmetic-shift positionBitboard 9) NOT_FILE_H blackPieces)
-        (bitwise-and (arithmetic-shift positionBitboard 7) NOT_FILE_A blackPieces)
-        (bitwise-and (arithmetic-shift positionBitboard 8) (bitwise-not allPieces))
-        (bitwise-and (arithmetic-shift positionBitboard 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4)))
-     (define possibleBlackMoves
-       (bitwise-ior
-        (bitwise-and (arithmetic-shift positionBitboard -9) NOT_FILE_A whitePieces)
-        (bitwise-and (arithmetic-shift positionBitboard -7) NOT_FILE_H whitePieces)
-        (bitwise-and (arithmetic-shift positionBitboard -8) (bitwise-not allPieces))
-        (bitwise-and (arithmetic-shift positionBitboard -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))))
-    (if (equal? #true color)
-        (bitwise-and possibleWhiteMoves (bitwise-not (bitwise-and possibleWhiteMoves whitePieces)) 18446744073709551615)
-        (bitwise-and possibleBlackMoves (bitwise-not (bitwise-and possibleBlackMoves blackPieces)) 18446744073709551615))))
 
+(define (whitePawnMoves allPieces blackPieces positionBitboard)
+  (bitwise-and (bitwise-ior (bitwise-and (arithmetic-shift positionBitboard 9) NOT_FILE_H blackPieces)
+                            (bitwise-and (arithmetic-shift positionBitboard 7) NOT_FILE_A blackPieces)
+                            (bitwise-and (arithmetic-shift positionBitboard 8) (bitwise-not allPieces))
+                            (bitwise-and (arithmetic-shift positionBitboard 16) (arithmetic-shift (bitwise-not allPieces) 8) (bitwise-not allPieces) RANK_4))
+               18446744073709551615))
 
+(define (blackPawnMoves allPieces whitePieces positionBitboard)
+  (bitwise-and (bitwise-ior (bitwise-and (arithmetic-shift positionBitboard -9) NOT_FILE_A whitePieces)
+                            (bitwise-and (arithmetic-shift positionBitboard -7) NOT_FILE_H whitePieces)
+                            (bitwise-and (arithmetic-shift positionBitboard -8) (bitwise-not allPieces))
+                            (bitwise-and (arithmetic-shift positionBitboard -16) (arithmetic-shift (bitwise-not allPieces) -8) (bitwise-not allPieces) RANK_5))
+               18446744073709551615))
 
 ;=============================================================================================
 
@@ -1205,15 +1202,15 @@
      (define enPassant
        (history-enPassant (worldState-history worldState)))
      (define unsafeForKing
-       (allAttacks matrix startPieceColor allPieces whitePieces blackPieces))
-     (define kingChecks
-       (newKingChecks matrix bitboards startPieceColor allPieces whitePieces blackPieces)))
+       (allAttacks matrix bitboards startPieceColor allPieces whitePieces blackPieces))
+     (define legalMovesUnderCheck
+       (worldState-legalMovesUnderCheck worldState)))
 
      
     (cond
       [(equal? #true (history-promotion (worldState-history worldState)))
        (makePromotion worldState previousStartPieceColor bitboards endPiece endPositionIndex previousEndPiece previousEndPositionIndex)]
-      [(preparePromotion? matrix startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces endPositionBitboard endPositionIndex)
+      [(preparePromotion? matrix bitboards startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces endPositionBitboard endPositionIndex legalMovesUnderCheck)
        (preparePromotion worldState startPieceColor bitboards startPositionBitboard endPiece endPositionIndex)]
 
 
@@ -1236,7 +1233,7 @@
 
        
                
-      [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece matrix startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces) endPositionBitboard) (- endPositionIndex 63)))
+      [(equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece matrix bitboards startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck) endPositionBitboard) (- endPositionIndex 63)))
        (makeRegularMove worldState matrix bitboards startPiece startPieceColor startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces castleRights castleWhiteKingSide castleWhiteQueenSide castleBlackKingSide castleWhiteQueenSide kingChecks)]
       [else
        (moveNotLegal worldState)])))
@@ -1246,7 +1243,7 @@
 
 
 
-(define (newKingChecks matrix bitboards color allPieces whitePieces blackPieces)
+(define (kingChecks matrix bitboards color allPieces whitePieces blackPieces)
   (local
     ((define (getPiece positionIndex)
        (matrixGet matrix (floor (/ positionIndex 8)) (modulo positionIndex 8)))
@@ -1254,11 +1251,11 @@
        (if (equal? color WHITE)
            "K"
            "k"))
-     (define (newKingChecksAcc bitboards positionIndex totalSum)
+     (define (kingChecksAcc bitboards positionIndex totalSum)
        (cond
          [(equal? 64 positionIndex) totalSum]
          [(or (equal? (getColor (getPiece positionIndex)) color) (equal? (getPiece positionIndex) " " ))
-          (newKingChecksAcc bitboards (add1 positionIndex) totalSum)]
+          (kingChecksAcc bitboards (add1 positionIndex) totalSum)]
          [(equal? 1 (bitwise-and 1 (arithmetic-shift (bitwise-and (dict-ref bitboards kingPiece)
                                                                   (getAttacksPiece (getPiece positionIndex)
                                                                                    (not color)
@@ -1268,10 +1265,10 @@
                                                                                    whitePieces
                                                                                    blackPieces))
                                                      (- (bitboardToPositionIndex (dict-ref bitboards kingPiece)) 63))))
-          (newKingChecksAcc bitboards (add1 positionIndex) (add1 totalSum))]
+          (kingChecksAcc bitboards (add1 positionIndex) (add1 totalSum))]
          [else
-          (newKingChecksAcc bitboards (add1 positionIndex) totalSum)])))
-    (newKingChecksAcc bitboards 0 0)))
+          (kingChecksAcc bitboards (add1 positionIndex) totalSum)])))
+    (kingChecksAcc bitboards 0 0)))
 
 
 (define (bitboardToPositionIndex bitboard)
@@ -1285,7 +1282,7 @@
 
 
 
-(define (getAttackRay matrix color startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)
+(define (getAttackRay matrix bitboards color startPositionBitboard startPositionIndex endPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)
   (local
     ((define rookPiece
        (if (equal? color WHITE)
@@ -1296,15 +1293,15 @@
            "B"
            "b")))
     (if (equal? 1 (bitwise-and 1 (arithmetic-shift (bitwise-and endPositionBitboard
-                                                                (getMovesPiece matrix rookPiece color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces))
+                                                                (getMovesPiece matrix bitboards rookPiece color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck))
                                                    (- endPositionIndex 63))))
-        (bitwise-and (getMovesPiece matrix rookPiece color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces)
-                     (getMovesPiece matrix endPiece (not color) endPositionBitboard endPositionIndex allPieces whitePieces blackPieces))
-        (bitwise-and (getMovesPiece matrix bishopPiece color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces)
-                     (getMovesPiece matrix endPiece (not color) endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)))))
+        (bitwise-and (getMovesPiece matrix bitboards rookPiece color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)
+                     (getMovesPiece matrix bitboards endPiece (not color) endPositionBitboard endPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck))
+        (bitwise-and (getMovesPiece matrix bitboards bishopPiece color startPositionBitboard startPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)
+                     (getMovesPiece matrix bitboards endPiece (not color) endPositionBitboard endPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)))))
   
 
-(define (legalMovesUnderCheck matrix bitboards startPiece color endPositionBitboard endPositionIndex allPieces whitePieces blackPieces kingChecks)
+(define (legalMovesUnderCheck matrix bitboards startPiece color endPositionBitboard endPositionIndex allPieces whitePieces blackPieces kingChecks legalMovesUnderCheck)
   (local
     ((define kingPiece
        (if (equal? color WHITE)
@@ -1332,51 +1329,54 @@
            "p")))
     (cond
       [(equal? 2 kingChecks)
-       (if (equal? 0 (getMovesPiece matrix kingPiece color (arithmetic-shift 1 (- 63 (bitboardToPositionIndex (dict-ref bitboards kingPiece)))) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) allPieces whitePieces blackPieces))
+       (if (equal? 0 (getMovesPiece matrix bitboards kingPiece color (arithmetic-shift 1 (- 63 (bitboardToPositionIndex (dict-ref bitboards kingPiece)))) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) allPieces whitePieces blackPieces legalMovesUnderCheck))
            (display "CHECKMATE")
            0)]
       [(and (equal? 1 kingChecks) (or (equal? startPiece (knightPiece (not color))) (equal? startPiece (pawnPiece (not color)))))
-       (if (and (equal? 0 (getMovesPiece matrix kingPiece color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) allPieces whitePieces blackPieces))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (queenPiece color) color (dict-ref bitboards (queenPiece color)) (bitboardToPositionIndex (dict-ref bitboards (queenPiece color))) allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (rookPiece color) color (dict-ref bitboards (rookPiece color)) (bitboardToPositionIndex (dict-ref bitboards (rookPiece color))) allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (bishopPiece color) color (dict-ref bitboards (bishopPiece color)) (bitboardToPositionIndex (dict-ref bitboards (bishopPiece color))) allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (knightPiece color) color (dict-ref bitboards (knightPiece color)) (bitboardToPositionIndex (dict-ref bitboards (knightPiece color))) allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (pawnPiece color) color (dict-ref bitboards (pawnPiece color)) (bitboardToPositionIndex (dict-ref bitboards (pawnPiece color))) allPieces whitePieces blackPieces)
-                                       endPositionBitboard)))
+       (if (equal? 0 (bitwise-ior (getMovesPiece matrix bitboards kingPiece color (arithmetic-shift 1 (- 63 (bitboardToPositionIndex (dict-ref bitboards kingPiece)))) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) allPieces whitePieces blackPieces legalMovesUnderCheck)
+                                  (bitwise-and (allMoves matrix bitboards color allPieces whitePieces blackPieces legalMovesUnderCheck)
+                                               endPositionBitboard)))
            (display "CHECKMATE")
            endPositionBitboard)]
       [(and (equal? 1 kingChecks) (or (equal? startPiece (queenPiece (not color))) (equal? startPiece (rookPiece (not color))) (equal? startPiece (bishopPiece (not color)))))
-       (if (and (equal? 0 (getMovesPiece matrix kingPiece color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) allPieces whitePieces blackPieces))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (queenPiece color) color (dict-ref bitboards (queenPiece color)) (bitboardToPositionIndex (dict-ref bitboards (queenPiece color))) allPieces whitePieces blackPieces)
-                                       (getAttackRay matrix color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (rookPiece color) color (dict-ref bitboards (rookPiece color)) (bitboardToPositionIndex (dict-ref bitboards (rookPiece color))) allPieces whitePieces blackPieces)
-                                       (getAttackRay matrix color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (bishopPiece color) color (dict-ref bitboards (bishopPiece color)) (bitboardToPositionIndex (dict-ref bitboards (bishopPiece color))) allPieces whitePieces blackPieces)
-                                       (getAttackRay matrix color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (knightPiece color) color (dict-ref bitboards (knightPiece color)) (bitboardToPositionIndex (dict-ref bitboards (knightPiece color))) allPieces whitePieces blackPieces)
-                                       (getAttackRay matrix color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)
-                                       endPositionBitboard))
-                (equal? 0 (bitwise-and (getMovesPiece matrix (pawnPiece color) color (dict-ref bitboards (pawnPiece color)) (bitboardToPositionIndex (dict-ref bitboards (pawnPiece color))) allPieces whitePieces blackPieces)
-                                       (getAttackRay matrix color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)
-                                       endPositionBitboard)))
+       (if (equal? 0 (bitwise-ior (getMovesPiece matrix bitboards kingPiece color (arithmetic-shift 1 (- 63 (bitboardToPositionIndex (dict-ref bitboards kingPiece)))) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) allPieces whitePieces blackPieces legalMovesUnderCheck)
+                                  (bitwise-and (allMoves matrix bitboards color allPieces whitePieces blackPieces legalMovesUnderCheck)
+                                               (bitwise-ior (getAttackRay matrix bitboards color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)
+                                                            endPositionBitboard))))
            (display "CHECKMATE")
            (bitwise-ior endPositionBitboard
-                        (getAttackRay matrix color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces)))]
-      [else 18446744073709551615])))
+                        (getAttackRay matrix bitboards color (dict-ref bitboards kingPiece) (bitboardToPositionIndex (dict-ref bitboards kingPiece)) startPiece endPositionBitboard endPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)))]
+      [else
+       (if (equal? 0 (allMoves matrix bitboards color allPieces whitePieces blackPieces legalMovesUnderCheck))
+           (display "STALEMATE")
+           18446744073709551615)])))
 
 
 
 
-
-
-
+(define (allMoves matrix bitboards startPieceColor allPieces whitePieces blackPieces legalMovesUnderCheck)
+  (local
+    ((define (getPiece positionIndex)
+       (matrixGet matrix (floor (/ positionIndex 8)) (modulo positionIndex 8)))
+     (define (allMovesAcc bitboard positionIndex)
+       (cond
+         [(equal? 64 positionIndex) bitboard]
+         [(or (equal? (getColor (getPiece positionIndex)) (not startPieceColor)) (equal? (getPiece positionIndex) " " ))
+          (allMovesAcc bitboard (add1 positionIndex))]
+         [else
+          (allMovesAcc (bitwise-ior bitboard
+                                      (getMovesPiece matrix
+                                                     bitboards
+                                                     (getPiece positionIndex)
+                                                       startPieceColor
+                                                       (arithmetic-shift 1 (- 63  positionIndex))
+                                                       positionIndex
+                                                       allPieces
+                                                       whitePieces
+                                                       blackPieces
+                                                       legalMovesUnderCheck))
+                         (add1 positionIndex))])))
+    (allMovesAcc 0 0)))
 
 
 
@@ -1444,7 +1444,7 @@
     ((define (positionClear? positionIndex)
        (equal? 0 (bitwise-and 1 (arithmetic-shift allPieces (- positionIndex 63)))))
      (define (positionSafe? positionIndex)
-       (equal? 0 (bitwise-and 1 (arithmetic-shift (allAttacks matrix color allPieces whitePieces blackPieces) (- positionIndex 63)))))
+       (equal? 0 (bitwise-and 1 (arithmetic-shift (allAttacks matrix bitboards color allPieces whitePieces blackPieces) (- positionIndex 63)))))
      (define makeCastleWhiteKingSide?
        (and (equal? "K" startPiece)
             (equal? 62 endPositionIndex)
@@ -1540,16 +1540,16 @@
 
 
 
-(define (preparePromotion? matrix startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces endPositionBitboard endPositionIndex)
+(define (preparePromotion? matrix bitboards startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces endPositionBitboard endPositionIndex legalMovesUnderCheck)
   (local
     ((define prepareWhitePromotion?
        (and (equal? "P" startPiece)
-            (equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece matrix startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces) endPositionBitboard) (- endPositionIndex 63)))
+            (equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece matrix bitboards startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck) endPositionBitboard) (- endPositionIndex 63)))
             (equal? 1 (floor (/ startPositionIndex 8)))
             (equal? 0 (floor (/ endPositionIndex 8)))))
      (define prepareBlackPromotion?
        (and (equal? "p" startPiece)
-            (equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece matrix startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces) endPositionBitboard) (- endPositionIndex 63)))
+            (equal? 1 (arithmetic-shift (bitwise-and (getMovesPiece matrix bitboards startPiece startPieceColor startPositionBitboard startPositionIndex allPieces whitePieces blackPieces legalMovesUnderCheck) endPositionBitboard) (- endPositionIndex 63)))
             (equal? 6 (floor (/ startPositionIndex 8)))
             (equal? 7 (floor (/ endPositionIndex 8))))))
     (or prepareWhitePromotion? prepareBlackPromotion?)))
@@ -1896,14 +1896,22 @@
                (and (equal? "p" startPiece) (equal? 1 (floor (/ startPositionIndex 8))) (equal? 3 (floor (/ endPositionIndex 8)))))
            #true
            #false))
+     (define newAllPieces
+       (allPiecesBitboard newBitboard))
+     (define newWhitePieces
+       (whitePiecesBitboard newBitboard))
+     (define newBlackPieces
+       (blackPiecesBitboard newBitboard))
      (define newLegalMovesUnderCheck
-       (legalMovesUnderCheck matrix newBitboard startPiece (not startPieceColor) endPositionBitboard endPositionIndex allPieces whitePieces blackPieces kingChecks)))
+       (legalMovesUnderCheck (bitboardsToMatrix newBitboard) newBitboard startPiece (not startPieceColor) endPositionBitboard endPositionIndex newAllPieces newWhitePieces newBlackPieces
+                             (kingChecks (bitboardsToMatrix newBitboard) newBitboard (not startPieceColor) newAllPieces newWhitePieces newBlackPieces) 18446744073709551615)))
     (make-worldState (drawPieces (bitboardsToMatrix newBitboard))
                      (bitboardsToMatrix newBitboard)
                      newBitboard
                      (not (worldState-turn worldState))
                      (worldState-kingChecks worldState)
-                     (display (printBitboard newLegalMovesUnderCheck))
+                     (begin (println newLegalMovesUnderCheck)
+                     newLegalMovesUnderCheck)
                      empty-image
                      (make-currentMove " " (make-posn 0 0) (make-posn 0 0))
                      (make-history newCastleRights
@@ -1913,8 +1921,6 @@
                                                       endPiece
                                                       endPositionIndex))
                      (worldState-quit worldState))))
-
-
 
 
 
@@ -2007,30 +2013,32 @@
 ;             ...]
 ;    [else ...]))
 
-(define (getMovesPiece matrix piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces)
+(define (getMovesPiece matrix bitboards piece startPieceColor positionBitboard positionIndex allPieces whitePieces blackPieces legalMovesUnderCheck)
   (cond
     [(equal? "K" piece)
-     (bitwise-and (kingMoves positionBitboard) (bitwise-not whitePieces) (bitwise-not (allAttacks matrix BLACK allPieces whitePieces blackPieces)))]
+     (bitwise-and (kingMoves positionBitboard) (bitwise-not whitePieces) (bitwise-not (allAttacks matrix bitboards BLACK allPieces whitePieces blackPieces)))]
     [(equal? "k" piece)
-     (bitwise-and (kingMoves positionBitboard) (bitwise-not blackPieces) (bitwise-not (allAttacks matrix WHITE allPieces whitePieces blackPieces)))]
+     (bitwise-and (kingMoves positionBitboard) (bitwise-not blackPieces) (bitwise-not (allAttacks matrix bitboards WHITE allPieces whitePieces blackPieces)))]
     [(equal? "Q" piece)
-     (bitwise-and (queenMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces))]
+     (bitwise-and (queenMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces) legalMovesUnderCheck)]
     [(equal? "q" piece)
-     (bitwise-and (queenMoves allPieces positionBitboard positionIndex) (bitwise-not blackPieces))]
+     (bitwise-and (queenMoves allPieces positionBitboard positionIndex) (bitwise-not blackPieces) legalMovesUnderCheck)]
     [(equal? "R" piece)
-     (bitwise-and (rookMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces))]
+     (bitwise-and (rookMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces) legalMovesUnderCheck)]
     [(equal? "r" piece)
-     (bitwise-and (rookMoves allPieces positionBitboard positionIndex) (bitwise-not blackPieces))]
+     (bitwise-and (rookMoves allPieces positionBitboard positionIndex) (bitwise-not blackPieces) legalMovesUnderCheck)]
     [(equal? "B" piece)
-     (bitwise-and (bishopMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces))]
+     (bitwise-and (bishopMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces) legalMovesUnderCheck)]
     [(equal? "b" piece)
-     (bitwise-and (bishopMoves allPieces positionBitboard positionIndex) (bitwise-not blackPieces))]
+     (bitwise-and (bishopMoves allPieces positionBitboard positionIndex) (bitwise-not blackPieces) legalMovesUnderCheck)]
     [(equal? "N" piece)
-     (bitwise-and (knightMoves positionBitboard) (bitwise-not whitePieces))]
+     (bitwise-and (knightMoves positionBitboard) (bitwise-not whitePieces) legalMovesUnderCheck)]
     [(equal? "n" piece)
-     (bitwise-and (knightMoves positionBitboard) (bitwise-not blackPieces))]
-    [(or (equal? "P" piece) (equal? "p" piece))
-             (pawnMoves startPieceColor allPieces whitePieces blackPieces positionBitboard)]
+     (bitwise-and (knightMoves positionBitboard) (bitwise-not blackPieces) legalMovesUnderCheck)]
+    [(equal? "P" piece)
+     (bitwise-and (whitePawnMoves allPieces blackPieces positionBitboard) (bitwise-not whitePieces) legalMovesUnderCheck)]
+    [(equal? "p" piece)
+     (bitwise-and (blackPawnMoves allPieces whitePieces positionBitboard) (bitwise-not blackPieces) legalMovesUnderCheck)]
     [else 0]))
 
 
@@ -2053,10 +2061,14 @@
 ;          (allAttacksAcc (bitwise-ior ...))])))
 ;    (allAttacksAcc ...)))
 
-(define (allAttacks matrix startPieceColor allPieces whitePieces blackPieces)
+(define (allAttacks matrix bitboards startPieceColor allPieces whitePieces blackPieces)
   (local
     ((define (getPiece positionIndex)
        (matrixGet matrix (floor (/ positionIndex 8)) (modulo positionIndex 8)))
+     (define newAllPieces
+       (if (equal? WHITE startPieceColor)
+           (bitwise-xor allPieces (dict-ref bitboards "k"))
+           (bitwise-xor allPieces (dict-ref bitboards "K"))))
      (define (allAttacksAcc bitboard positionIndex)
        (cond
          [(equal? 64 positionIndex) bitboard]
@@ -2068,7 +2080,7 @@
                                                        startPieceColor
                                                        (arithmetic-shift 1 (- 63  positionIndex))
                                                        positionIndex
-                                                       allPieces
+                                                       newAllPieces
                                                        whitePieces
                                                        blackPieces))
                          (add1 positionIndex))])))
@@ -2303,17 +2315,24 @@
 
 
 
+; TEST SECTION
+
+;(drawPieces STANDARD_MATRIX)
+;(legalMovesUnderCheck TEST_MATRIX BITBOARDS_OF_TEST_MATRIX "P" BLACK (arithmetic-shift 1 (- 63 41)) 41 TEST_ALLPIECES TEST_WHITEPIECES TEST_BLACKPIECES 0 18446744073709551615)
+
+;(printBitboard (allMoves TEST_MATRIX WHITE TEST_ALLPIECES TEST_WHITEPIECES TEST_BLACKPIECES 18446744073709551615))
 
 
 
 
 
+;(printBitboard (allMoves STANDARD_MATRIX WHITE ALLPIECES WHITEPIECES BLACKPIECES 18446744073709551615))
 
+;(bitwise-and (rookMoves allPieces positionBitboard positionIndex) (bitwise-not whitePieces))
 
+;(printBitboard (whitePawnMoves ALLPIECES (arithmetic-shift 1 (- 63 55))))
 
-
-
-
+;(printBitboard ALLPIECES)
 
 
 
@@ -2363,3 +2382,4 @@
 ; previous startpiececolor is obsolete
 ; kings are still capturable pieces...
 ; rayattacks is a mess with the names endpiece startpiece...
+; getmoves call itself when using legalMovesUnderChecks which leads to useless parameters
